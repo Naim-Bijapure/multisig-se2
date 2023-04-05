@@ -1,33 +1,36 @@
-# Scaffold-Eth 2
+# Multisig with SE-2
 
-⚠️ This project is currently under active development. Things might break. Feel free to check the open issues & create new ones.
+Its multisig implementation from [multisig.lol](https://multisig.lol/) using SE-2.
+
+for local setup follow below SE-2 guide
 
 Scaffold-Eth 2 is an open-source toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
 
 It's a new version of scaffold-eth with its core functionality. Built using NextJS, RainbowKit, Hardhat, Wagmi and Typescript.
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+-   ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
+-   🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
+-   🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
 
 ## Contents
 
-- [Requirements](#requirements)
-- [Quickstart](#Quickstart)
-- [Deploying your Smart Contracts to a Live Network](#Deploying-your-Smart-Contracts-to-a-live-network)
-- [Deploying your NextJS App](#Deploying-your-NextJS-App)
-- [Disabling Type & Linting Error Checks](#Disabling-type-and-linting-error-checks)
-  * [Disabling commit checks](#Disabling-commit-checks)
-  * [Deploying to Vercel without any checks](#Deploying-to-Vercel-without-any-checks)
-  * [Disabling Github Workflow](#Disabling-Github-Workflow)
-- [Contributing to Scaffold-Eth 2](#Contributing-to-Scaffold-Eth-2)
+-   [Requirements](#requirements)
+-   [Quickstart](#Quickstart)
+-   [Deploying your Smart Contracts to a Live Network](#Deploying-your-Smart-Contracts-to-a-live-network)
+-   [Deploying your NextJS App](#Deploying-your-NextJS-App)
+-   [Disabling Type & Linting Error Checks](#Disabling-type-and-linting-error-checks)
+    -   [Disabling commit checks](#Disabling-commit-checks)
+    -   [Deploying to Vercel without any checks](#Deploying-to-Vercel-without-any-checks)
+    -   [Disabling Github Workflow](#Disabling-Github-Workflow)
+-   [Contributing to Scaffold-Eth 2](#Contributing-to-Scaffold-Eth-2)
 
 ## Requirements
 
 Before you begin, you need to install the following tools:
-- [Node (v18 LTS)](https://nodejs.org/en/download/)
-- [Yarn (v1.x)](https://classic.yarnpkg.com/en/docs/install/)
-- [Git](https://git-scm.com/downloads)
+
+-   [Node (v18 LTS)](https://nodejs.org/en/download/)
+-   [Yarn (v1.x)](https://classic.yarnpkg.com/en/docs/install/)
+-   [Git](https://git-scm.com/downloads)
 
 ## Quickstart
 
@@ -54,6 +57,7 @@ This command starts a local Ethereum network using Hardhat. The network runs on 
 ```
 yarn deploy
 ```
+
 This command deploys a test smart contract to the local network. The contract is located in `packages/hardhat/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/hardhat/deploy` to deploy the contract to the network. You can also customize the deploy script.
 
 4. On a third terminal, start your NextJS app:
@@ -61,24 +65,27 @@ This command deploys a test smart contract to the local network. The contract is
 ```
 yarn start
 ```
+
 Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the contract component or the example ui in the frontend. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
 
 Run smart contract test with `yarn hardhat:test`
 
-- Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
-- Edit your frontend in `packages/nextjs/pages`
-- Edit your deployment scripts in `packages/hardhat/deploy`
+-   Edit your smart contract `YourContract.sol` in `packages/hardhat/contracts`
+-   Edit your frontend in `packages/nextjs/pages`
+-   Edit your deployment scripts in `packages/hardhat/deploy`
 
 ## Deploying your Smart Contracts to a Live Network
+
 Once you are ready to deploy your smart contracts, there are a few things you need to adjust.
 
 1. Select the network
 
-By default, ```yarn deploy``` will deploy the contract to the local network. You can change the defaultNetwork in `packages/hardhat/hardhat.config.js.` You could also simply run ```yarn deploy --network target_network``` to deploy to another network.
+By default, `yarn deploy` will deploy the contract to the local network. You can change the defaultNetwork in `packages/hardhat/hardhat.config.js.` You could also simply run `yarn deploy --network target_network` to deploy to another network.
 
 Check the `hardhat.config.js` for the networks that are pre-configured. You can also add other network settings to the `hardhat.config.js file`. Here are the [Alchemy docs](https://docs.alchemy.com/docs/how-to-add-alchemy-rpc-endpoints-to-metamask) for information on specific networks.
 
 Example: To deploy the contract to the Sepolia network, run the command below:
+
 ```
 yarn deploy --network sepolia
 ```
@@ -92,7 +99,7 @@ DEPLOYER_PRIVATE_KEY=""
 
 The deployer account is the account that will deploy your contracts. Additionally, the deployer account will be used to execute any function calls that are part of your deployment script.
 
-You can generate a random account / private key with ```yarn generate``` or add the private key of your crypto wallet. ```yarn generate``` will create a random account and add the DEPLOYER_PRIVATE_KEY to the .env file. You can check the generated account with ```yarn account```.
+You can generate a random account / private key with `yarn generate` or add the private key of your crypto wallet. `yarn generate` will create a random account and add the DEPLOYER_PRIVATE_KEY to the .env file. You can check the generated account with `yarn account`.
 
 3. Deploy your smart contract(s)
 
@@ -121,10 +128,12 @@ If you want to redeploy to the same production URL you can run `yarn vercel --pr
 **Hint**: We recommend connecting the project GitHub repo to Vercel so you the gets automatically deployed when pushing to `main`
 
 ## Disabling type and linting error checks
+
 > **Hint**
 > Typescript helps you catch errors at compile time, which can save time and improve code quality, but can be challenging for those who are new to the language or who are used to the more dynamic nature of JavaScript. Below are the steps to disable type & lint check at different levels
 
 ### Disabling commit checks
+
 We run `pre-commit` [git hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) which lints the staged files and don't let you commit if there is an linting error.
 
 To disable this, go to `.husky/pre-commit` file and comment out `yarn lint-staged --verbose`
@@ -135,15 +144,18 @@ To disable this, go to `.husky/pre-commit` file and comment out `yarn lint-stage
 ```
 
 ### Deploying to Vercel without any checks
+
 Vercel by default runs types and lint checks while developing `build` and deployment fails if there is a types or lint error.
 
 To ignore types and lint error checks while deploying, use :
+
 ```shell
 yarn vercel:yolo
 ```
 
 ### Disabling Github Workflow
-We have github workflow setup checkout `.github/workflows/lint.yaml` which runs types and lint error checks every time code is __pushed__ to `main` branch or __pull request__ is made to `main` branch
+
+We have github workflow setup checkout `.github/workflows/lint.yaml` which runs types and lint error checks every time code is **pushed** to `main` branch or **pull request** is made to `main` branch
 
 To disable it, **delete `.github` directory**
 
@@ -152,4 +164,3 @@ To disable it, **delete `.github` directory**
 We welcome contributions to Scaffold-Eth 2!
 
 Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/se-2/blob/master/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-Eth 2.
-

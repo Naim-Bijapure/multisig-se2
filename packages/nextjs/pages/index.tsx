@@ -16,7 +16,7 @@ import { ethers } from "ethers";
 import type { NextPage } from "next";
 import QRCode from "react-qr-code";
 import { useDebounce, useInterval, useLocalStorage } from "usehooks-ts";
-import { Chain, useAccount, useNetwork, useProvider, useSigner, useSwitchNetwork } from "wagmi";
+import { Chain, useAccount, useNetwork, useSigner, useSwitchNetwork } from "wagmi";
 import { MinusCircleIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
 import { ProposalModal } from "~~/components/ProposalModal";
 import { useDeployedContractInfo, useEvent, useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth";

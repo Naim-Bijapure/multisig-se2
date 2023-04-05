@@ -8,7 +8,6 @@ import {
   InputBase,
   MAIN_TABS,
   ROUTE_TYPES,
-  RainbowKitCustomConnectButton,
   TX_STATUS,
 } from "../components/scaffold-eth";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -20,13 +19,7 @@ import { useDebounce, useInterval, useLocalStorage } from "usehooks-ts";
 import { Chain, useAccount, useNetwork, useProvider, useSigner, useSwitchNetwork } from "wagmi";
 import { MinusCircleIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
 import { ProposalModal } from "~~/components/ProposalModal";
-import {
-  useDeployedContractInfo,
-  useEvent,
-  useScaffoldContractRead,
-  useScaffoldContractWrite,
-  useTransactor,
-} from "~~/hooks/scaffold-eth";
+import { useDeployedContractInfo, useEvent, useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth";
 
 // const Sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -47,29 +40,6 @@ const poolData = [
       "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
     ],
     signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89", "0x0fAb64624733a7020D332203568754EB1a37DB89"],
-    cancel_signatures: [],
-    cancel_signers: [],
-    type: "transfer",
-    status: "success",
-    url: "https://example.com",
-    createdAt: "10-10-2023 10:10",
-    executedAt: "10-10-2023 10:10",
-    executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
-    createdBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
-  },
-  {
-    txId: 22324,
-    chainId: 31337,
-    walletAddress: "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975",
-    nonce: "1",
-    to: "0x0fAb64624733a7020D332203568754EB1a37DB89",
-    amount: 0.0007152513035455008,
-    data: "0x",
-    hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
-    signatures: [
-      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
-    ],
-    signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89"],
     cancel_signatures: [],
     cancel_signers: [],
     type: "transfer",
@@ -118,10 +88,9 @@ const Home: NextPage = () => {
   const debounceWalletName = useDebounce(walletName, 500);
 
   // wagmi hooks
-  const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork();
+  const { chains, switchNetwork } = useSwitchNetwork();
   const { chain } = useNetwork();
   const { address, isConnected } = useAccount();
-  const provider = useProvider();
   const { data: signer } = useSigner();
 
   // scaffold hooks
@@ -133,13 +102,6 @@ const Home: NextPage = () => {
     args: [ownersAddress, signatures as any, debounceWalletName],
     value: walletAmount,
   });
-
-  // const { data: executeData, writeAsync: writeExecuteAsync } = useScaffoldContractWrite({
-  //   contractName: "MultiSigWallet",
-  //   functionName: "executeTransaction",
-  //   address: currentWalletAddress,
-  //   args: [...(executeArgs as any[])],
-  // });
 
   const Tx = useTransactor(signer ? signer : undefined);
 
@@ -353,6 +315,7 @@ const Home: NextPage = () => {
     const recover = await walletContract?.recover(newHash, signature);
     const isOwner = await walletContract?.isOwner(recover);
     if (isOwner) {
+      // eslint-disable-next-line prefer-const
       let { txId, walletAddress, signers, signatures, cancel_signatures, cancel_signers } = item;
       let reqData;
       if (!isCancel) {
@@ -440,7 +403,7 @@ const Home: NextPage = () => {
       );
       estimateGasLimit = await estimateGasLimit?.toNumber();
 
-      console.log("estimateGasLimit", estimateGasLimit);
+      // console.log("estimateGasLimit", estimateGasLimit);
 
       // add extra 100k gas limit
       finalGaslimit = estimateGasLimit + 100000;
@@ -733,7 +696,7 @@ const Home: NextPage = () => {
                                           ) ? (
                                           data[keyName].length > 0 && (
                                             <>
-                                              {data[keyName].map((value, index) => (
+                                              {data[keyName].map((value: string, index: number) => (
                                                 <div key={index}>
                                                   <Address address={value} />
                                                 </div>
@@ -1017,22 +980,6 @@ const Home: NextPage = () => {
           </div>
         </div>
       </div>
-
-      {/* <button
-        onClick={async () => {
-          const nonce = await walletContract?.nonce();
-          const response = await axios.post("/api/pool", {
-            reqType: ROUTE_TYPES.GET_POOL,
-            walletAddress: walletContract?.address,
-            currentNonce: nonce.toString(),
-            chainId: chain?.id,
-            tx_type: TX_STATUS.IN_QUEUE,
-          });
-          setTxPool(response.data.data);
-        }}
-      >
-        test
-      </button> */}
     </div>
   );
 };

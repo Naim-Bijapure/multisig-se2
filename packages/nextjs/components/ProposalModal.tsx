@@ -44,8 +44,12 @@ export const ProposalModal = ({
 
   const onChangeTab = (tabType: PROPOSAL_TYPES) => {
     setCurrentTab(tabType);
+    setRecipient("");
+    setCustomCallData("");
+    setSignerAddress("");
+    setManageOwnerType("");
+    setSignatureRequired("");
   };
-
   const onPropose = async () => {
     try {
       if (PROPOSAL_TYPES.SEND_ETH === currentTab) {
@@ -81,7 +85,6 @@ export const ProposalModal = ({
         };
         if (isOwner) {
           const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
-          console.log(`n-🔴 => onPropose => res:`, res.data);
         }
       }
 
@@ -125,7 +128,6 @@ export const ProposalModal = ({
 
         if (isOwner) {
           const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
-          console.log(`n-🔴 => onPropose => res:`, res.data);
         }
       }
 
@@ -166,7 +168,6 @@ export const ProposalModal = ({
 
         if (isOwner) {
           const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
-          console.log(`n-🔴 => onPropose => res:`, res.data);
         }
       }
       setIsProposalModalOpen(false);
@@ -264,20 +265,32 @@ export const ProposalModal = ({
                   </div>
 
                   <div className="m-2">
-                    <EtherInput value={amount} onChange={setAmount} placeholder="Enter amount (optional)" />
+                    <EtherInput value={amount as string} onChange={setAmount} placeholder="Enter amount (optional)" />
                   </div>
                 </div>
               )}
             </div>
           </div>
           <div className="modal-action">
-            <label className="btn btn-primary" onClick={onPropose}>
+            <button
+              className="btn btn-primary"
+              onClick={onPropose}
+              disabled={
+                currentTab === 0
+                  ? !recipient || !amount
+                  : currentTab === 1
+                  ? !manageOwnerType || !signerAddress || !signatureRequired
+                  : currentTab === 2
+                  ? !recipient || !customCallData || !amount
+                  : false
+              }
+            >
               Propose
-            </label>
+            </button>
 
-            <label className="btn btn-primary btn-outline" onClick={() => setIsProposalModalOpen(false)}>
+            <button className="btn btn-primary btn-outline" onClick={() => setIsProposalModalOpen(false)}>
               Close
-            </label>
+            </button>
           </div>
         </div>
       </div>

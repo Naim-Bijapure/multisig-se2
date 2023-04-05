@@ -507,7 +507,7 @@ const Home: NextPage = () => {
       </Head>
 
       <div
-        className={`flex flex-col items-start ml-32 mt-10  w-[80%]  ${
+        className={`flex flex-col items-start ml-32 mt-6  w-[80%]  ${
           isConnected === false ? "blur-sm pointer-events-none" : ""
         } `}
         aria-disabled={isConnected === false}

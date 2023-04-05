@@ -8,9 +8,6 @@ export default function handler(request: Request | any, response: Response | any
 
     if (reqType === ROUTE_TYPES.GET_POOL) {
       const key = walletAddress + "_" + chainId;
-      console.log(`n-🔴 => handler => key:`, key);
-      console.log(`n-🔴 => handler => !transactions[key]:`, !transactions[key]);
-
       if (!transactions[key]) {
         return response.json({ data: [] });
       }

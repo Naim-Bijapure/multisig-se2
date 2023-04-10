@@ -34,7 +34,8 @@ export const useScaffoldContractWrite = <
 
   const wagmiContractWrite = useContractWrite({
     mode: "recklesslyUnprepared",
-    chainId: configuredNetwork.id,
+    // chainId: configuredNetwork.id,
+    chainId: chain ? chain.id : configuredNetwork.id,
     address: address ? address : deployedContractData?.address,
     abi: deployedContractData?.abi as Abi,
     args: args as unknown[],
@@ -55,10 +56,10 @@ export const useScaffoldContractWrite = <
       notification.error("Please connect your wallet");
       return;
     }
-    if (chain?.id !== configuredNetwork.id) {
-      notification.error("You on the wrong network");
-      return;
-    }
+    // if (chain?.id !== configuredNetwork.id) {
+    //   notification.error("You on the wrong network");
+    //   return;
+    // }
 
     if (wagmiContractWrite.writeAsync) {
       try {

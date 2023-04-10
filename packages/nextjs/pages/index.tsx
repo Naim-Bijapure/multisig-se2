@@ -711,7 +711,7 @@ const Home: NextPage = () => {
                                     </tr>
                                   ))}
 
-                                <tr className="hover">
+                                {/* <tr className="hover">
                                   <td></td>
                                   <td className="text-red-600">Cancle Transcaction</td>
                                   <td className="flex justify-start">
@@ -726,7 +726,7 @@ const Home: NextPage = () => {
                                     <button className="btn btn-error btn-outline btn-xs m-2">Execute cancel </button>
                                   </td>
                                   <td></td>
-                                </tr>
+                                </tr> */}
                               </tbody>
                             </table>
                           </div>

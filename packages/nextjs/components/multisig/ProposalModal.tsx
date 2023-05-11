@@ -9,6 +9,7 @@ enum PROPOSAL_TYPES {
   SEND_ETH,
   MANAGE_OWNERS,
   CUSTOM_CALL,
+  SPLIT_ETH,
 }
 export const ProposalModal = ({
   isProposalModalOpen,
@@ -177,6 +178,48 @@ export const ProposalModal = ({
           const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
         }
       }
+      if (PROPOSAL_TYPES.SPLIT_ETH === currentTab) {
+        const executeToAddress = walletContract?.address;
+        const nonce = await walletContract?.nonce();
+
+        const callData = walletContract?.interface?.encodeFunctionData("splitEqualETH", [
+          [address, "0xDc33aB45de06754C667d438f1C975C3c45a986E1"],
+        ]);
+
+        const newHash = await walletContract?.getTransactionHash(
+          nonce,
+          executeToAddress,
+          ethers.utils.parseEther("" + parseFloat(amount ? amount : "0").toFixed(12)),
+          callData,
+        );
+        const signature = await signer?.signMessage(ethers.utils.arrayify(newHash));
+        const recover = await walletContract?.recover(newHash, signature);
+        const isOwner = await walletContract?.isOwner(recover);
+
+        const reqData = {
+          txId: Date.now(),
+          chainId: chainId,
+          walletAddress: walletContract?.address,
+          nonce: nonce?.toString(),
+          to: executeToAddress,
+          amount: amount ? amount : 0,
+          data: callData,
+          hash: newHash,
+          signatures: [signature],
+          signers: [recover],
+          type: "split_eth",
+          status: TX_STATUS.IN_QUEUE,
+          createdAt: moment().format("YYYY-MM-DD HH:mm"),
+          // executedAt: "10-10-2023 10:10",
+          createdBy: address,
+          // executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+        };
+
+        if (isOwner) {
+          const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
+        }
+      }
+
       setIsProposalModalOpen(false);
       resetData();
     } catch (error) {
@@ -210,6 +253,13 @@ export const ProposalModal = ({
                 onClick={() => onChangeTab(PROPOSAL_TYPES.CUSTOM_CALL)}
               >
                 Custom call
+              </a>
+
+              <a
+                className={`tab tab-lifted ${PROPOSAL_TYPES.SPLIT_ETH === currentTab && "tab-active"}`}
+                onClick={() => onChangeTab(PROPOSAL_TYPES.SPLIT_ETH)}
+              >
+                Split eth
               </a>
             </div>
             {/* body content */}
@@ -270,6 +320,19 @@ export const ProposalModal = ({
                       value={customCallData}
                       placeholder="Enter custom call data"
                     />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div>
+              {PROPOSAL_TYPES.SPLIT_ETH === currentTab && (
+                <div className="m-2">
+                  <div className="m-2">
+                    <AddressInput value={recipient} onChange={setRecipient} placeholder="Enter recipient address" />
+                  </div>
+
+                  <div className="m-2">
+                    <EtherInput value={amount as string} onChange={setAmount} placeholder="Enter amount" />
                   </div>
                 </div>
               )}

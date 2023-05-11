@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Contract, ContractCodeStatus, ContractName } from "./contract.types";
 import { useIsMounted } from "usehooks-ts";
 import { useNetwork, useProvider } from "wagmi";
-import contracts from "~~/generated/hardhat_contracts";
+import contracts from "~~/components/generated/hardhat_contracts";
 import scaffoldConfig from "~~/scaffold.config";
 
 /**

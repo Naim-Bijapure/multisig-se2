@@ -1,4 +1,4 @@
-import contracts from "../../generated/hardhat_contracts";
+import contracts from "../../components/generated/hardhat_contracts";
 import { Abi, AbiParametersToPrimitiveTypes, ExtractAbiEvent, ExtractAbiEventNames, ExtractAbiFunction } from "abitype";
 import type { ExtractAbiFunctionNames } from "abitype";
 import { UseContractReadConfig, UseContractWriteConfig } from "wagmi";

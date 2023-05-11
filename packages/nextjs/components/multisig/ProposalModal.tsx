@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Address,
-  AddressInput,
-  Balance,
-  EtherInput,
-  InputBase,
-  ROUTE_TYPES,
-  TX_STATUS,
-} from "../components/scaffold-eth";
+import { Address, AddressInput, Balance, EtherInput, InputBase, ROUTE_TYPES, TX_STATUS } from "../scaffold-eth";
 import axios from "axios";
 import { ethers } from "ethers";
 import moment from "moment";
@@ -25,13 +17,17 @@ export const ProposalModal = ({
   signer,
   address,
   chainId,
+  nonce,
+  poolTxNumber,
 }: {
   isProposalModalOpen: boolean;
   setIsProposalModalOpen: any;
   walletContract: ethers.Contract | undefined;
   signer: ethers.Signer | any;
   address: string | any;
+  nonce: number | any;
   chainId: number | any;
+  poolTxNumber: number | any;
 }) => {
   const [currentTab, setCurrentTab] = useState<PROPOSAL_TYPES>(0);
   const [recipient, setRecipient] = useState<string>("");
@@ -39,6 +35,7 @@ export const ProposalModal = ({
   const [signerAddress, setSignerAddress] = useState<string>("");
   const [manageOwnerType, setManageOwnerType] = useState<string>("");
   const [signatureRequired, setSignatureRequired] = useState<string>("");
+  const [customNonce, setCustomNonce] = useState<string>("");
 
   const [amount, setAmount] = useState<string>();
 
@@ -50,12 +47,22 @@ export const ProposalModal = ({
     setManageOwnerType("");
     setSignatureRequired("");
   };
+
+  const resetData = () => {
+    setRecipient("");
+    setCustomCallData("");
+    setSignerAddress("");
+    setManageOwnerType("");
+    setSignatureRequired("");
+  };
+
   const onPropose = async () => {
     try {
       if (PROPOSAL_TYPES.SEND_ETH === currentTab) {
         const callData = "0x";
         const executeToAddress = recipient;
-        const nonce = await walletContract?.nonce();
+        const currentNonce = await walletContract?.nonce();
+        const nonce = Boolean(customNonce) ? customNonce : Number(currentNonce?.toString()) + Number(poolTxNumber);
         const newHash = await walletContract?.getTransactionHash(
           nonce,
           executeToAddress,
@@ -171,6 +178,7 @@ export const ProposalModal = ({
         }
       }
       setIsProposalModalOpen(false);
+      resetData();
     } catch (error) {
       console.log("n-Error: ", error);
     }
@@ -263,12 +271,17 @@ export const ProposalModal = ({
                       placeholder="Enter custom call data"
                     />
                   </div>
-
-                  <div className="m-2">
-                    <EtherInput value={amount as string} onChange={setAmount} placeholder="Enter amount (optional)" />
-                  </div>
                 </div>
               )}
+            </div>
+
+            <div className="m-4">
+              <InputBase onChange={setCustomNonce} value={customNonce} placeholder="Enter Custom nonce (optional)" />
+              <div className="ml-2 text-gray-400">
+                nonce <span className="text-primary-focus"> {Number(nonce) + Number(poolTxNumber)}</span> = current
+                nonce <span className="text-green-400 m-1">{nonce}</span> + active
+                <span className="text-green-400 m-1">{Number(poolTxNumber)}</span> tx in pool
+              </div>
             </div>
           </div>
           <div className="modal-action">

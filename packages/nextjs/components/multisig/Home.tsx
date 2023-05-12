@@ -197,7 +197,7 @@ const Home = ({
 
   useInterval(() => {
     setTogglePool(() => !togglePool);
-  }, 15000);
+  }, 5000);
 
   // methods
   const onChangeTab = (tabType: MAIN_TABS) => {
@@ -557,6 +557,10 @@ const Home = ({
   };
 
   const onConfirmNonceUpdate = (item: any) => {
+    if (editedTxNonce < nonce) {
+      toast.error("nonce should be greater than current nonce");
+      return;
+    }
     setCurrentTxData(item);
     setIsConfirmNonceOpen(true);
   };
@@ -1003,7 +1007,12 @@ const Home = ({
                                               "cancel_signatures",
                                               "cancel_signers",
                                               "split_addresses",
+                                              "cancel_signatures",
+                                              "cancel_signers",
+                                              "cancel_data",
+                                              "cancel_hash",
                                             ].includes(keyName) ? (
+                                            data[keyName] &&
                                             data[keyName].length > 0 && (
                                               <>
                                                 {data[keyName].map((value: string, index: number) => (
@@ -1114,6 +1123,7 @@ const Home = ({
                                             "cancel_data",
                                             "cancel_hash",
                                           ].includes(keyName) ? (
+                                          data[keyName] &&
                                           data[keyName].length > 0 && (
                                             <>
                                               {data[keyName].map((value: string, index: any) => (

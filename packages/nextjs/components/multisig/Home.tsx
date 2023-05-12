@@ -28,7 +28,7 @@ const previewAddress = "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975";
 
 const poolData = [
   {
-    txId: 22323,
+    txId: 22321,
     chainId: 31337,
     walletAddress: "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975",
     nonce: "0",
@@ -43,6 +43,62 @@ const poolData = [
       "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
     ],
     signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89", "0x0fAb64624733a7020D332203568754EB1a37DB89"],
+    split_addresses: [],
+    cancel_signatures: [],
+    cancel_signers: [],
+    type: "transfer",
+    status: "success",
+    url: "https://example.com",
+    createdAt: "10-10-2023 10:10",
+    executedAt: "10-10-2023 10:10",
+    executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    createdBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+  },
+
+  {
+    txId: 22322,
+    chainId: 31337,
+    walletAddress: "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975",
+    nonce: "1",
+    to: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    amount: 0.0007152513035455008,
+    data: "0x",
+    cancel_data: "0x",
+    hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
+    cancel_hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
+    signatures: [
+      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
+      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
+    ],
+    signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89", "0x0fAb64624733a7020D332203568754EB1a37DB89"],
+    split_addresses: [],
+    cancel_signatures: [],
+    cancel_signers: [],
+    type: "transfer",
+    status: "success",
+    url: "https://example.com",
+    createdAt: "10-10-2023 10:10",
+    executedAt: "10-10-2023 10:10",
+    executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    createdBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+  },
+  {
+    txId: 22323,
+    chainId: 31337,
+    walletAddress: "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975",
+    nonce: "2",
+    to: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    amount: 0.0007152513035455008,
+    data: "0x",
+    cancel_data: "0x",
+    hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
+    cancel_hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
+    signatures: [
+      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
+      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
+    ],
+    signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89", "0x0fAb64624733a7020D332203568754EB1a37DB89"],
+    split_addresses: [],
     cancel_signatures: [],
     cancel_signers: [],
     type: "transfer",
@@ -361,6 +417,8 @@ const Home = ({
           newData: {
             signatures: [...new Set([...signatures, signature])],
             signers: [...new Set([...signers, address])],
+            cancel_signatures: [],
+            cancel_signers: [],
           },
         };
       }
@@ -380,6 +438,8 @@ const Home = ({
             cancel_data: "0x",
             cancel_signatures: [...new Set([...cancel_signatures, signature])],
             cancel_signers: [...new Set([...cancel_signers, address])],
+            signatures: [],
+            signers: [],
           },
         };
       }
@@ -394,6 +454,8 @@ const Home = ({
             hash: newHash,
             signatures: [],
             signers: [],
+            cancel_signatures: [],
+            cancel_signers: [],
           },
         };
       }
@@ -508,32 +570,49 @@ const Home = ({
   };
 
   const onBatchExecute = async () => {
-    const toExecutedPool = txPool.filter(item => {
-      return selectedTxs.includes(item.txId);
-    });
+    const toExecutedPool = txPool
+      .filter(item => {
+        return selectedTxs.includes(item.txId);
+      })
+      .sort((itemA, itemB) => itemA.nonce - itemB.nonce);
+
     const batchValues: { to: string[]; value: any[]; data: string[]; signatures: string[][] } = {
       to: [],
       value: [],
       data: [],
       signatures: [],
     };
+    let i = +toExecutedPool[0].nonce;
+
     for (const iterator of toExecutedPool) {
-      batchValues.to.push(iterator.to);
-      batchValues.value.push(ethers.utils.parseEther("" + parseFloat(iterator.amount).toFixed(12)));
-      batchValues.data.push(iterator.data);
-      batchValues.signatures.push(iterator.signatures);
+      if (+iterator.nonce === i) {
+        batchValues.to.push(iterator.to);
+        batchValues.value.push(ethers.utils.parseEther("" + parseFloat(iterator.amount).toFixed(12)));
+        batchValues.data.push(iterator.data);
+        batchValues.signatures.push(iterator.signatures);
+      }
+
+      if (+iterator.nonce !== i) {
+        break;
+      }
+
+      i += 1;
     }
 
-    const batchExecuteFunc = walletContract?.executeBatch(
-      batchValues.to,
-      batchValues.value,
-      batchValues.data,
-      batchValues.signatures,
-      { gasLimit: 1000000 },
-    );
-    const tx = await Tx(batchExecuteFunc);
-    const rcpt = await tx?.wait();
-    setSelectedTxs([]);
+    if (i === selectedTxs.length) {
+      const batchExecuteFunc = walletContract?.executeBatch(
+        batchValues.to,
+        batchValues.value,
+        batchValues.data,
+        batchValues.signatures,
+        { gasLimit: 1000000 },
+      );
+      const tx = await Tx(batchExecuteFunc);
+      const rcpt = await tx?.wait();
+      setSelectedTxs([]);
+    } else {
+      toast.error("Selected transaction nonce order is incorrect!");
+    }
   };
 
   const onShareWallet = async () => {
@@ -794,13 +873,18 @@ const Home = ({
               <div className="w-[60%] mt-4 absolute">
                 <div className="m-2">
                   {selectedTxs.length > 0 && (
-                    <button
-                      className="btn btn-xs btn-success capitalize"
-                      onClick={onBatchExecute}
-                      disabled={isWalletOwner}
+                    <div
+                      className="tooltip tooltip-warning z-50"
+                      data-tip="Make sure the selected transaction has an incremental nonce"
                     >
-                      Execute {selectedTxs.length} tx
-                    </button>
+                      <button
+                        className="btn btn-xs btn-success capitalize"
+                        onClick={onBatchExecute}
+                        disabled={isWalletOwner}
+                      >
+                        Execute {selectedTxs.length} tx
+                      </button>
+                    </div>
                   )}
                 </div>
                 {txPool &&
@@ -826,14 +910,19 @@ const Home = ({
                         >
                           {/* <input type="checkbox" /> */}
 
-                          <div className="collapse-title text-sm font-medium flex justify-around">
+                          <div
+                            className={`collapse-title text-sm font-medium flex justify-around ${
+                              data.nonce === nonce && "bg-green-50"
+                            } ${data.cancel_signatures && data.cancel_signatures.length > 0 && "bg-red-50"}`}
+                          >
                             <div>
                               <input
                                 type="checkbox"
                                 checked={selectedTxs.length > 0 && selectedTxs.includes(data.txId) ? true : false}
-                                // disabled={
-                                //   signaturesRequired && data.signatures.length !== +signaturesRequired ? true : false
-                                // }
+                                disabled={
+                                  (data.cancel_signatures && data.cancel_signatures.length > 0) ||
+                                  data.signatures.length === 0
+                                }
                                 className="checkbox checkbox-primary checkbox-sm"
                                 onClick={event => {
                                   event.stopPropagation();
@@ -908,9 +997,13 @@ const Home = ({
                                                 </button>
                                               )}
                                             </div>
-                                          ) : ["signatures", "signers", "cancel_signatures", "cancel_signers"].includes(
-                                              keyName,
-                                            ) ? (
+                                          ) : [
+                                              "signatures",
+                                              "signers",
+                                              "cancel_signatures",
+                                              "cancel_signers",
+                                              "split_addresses",
+                                            ].includes(keyName) ? (
                                             data[keyName].length > 0 && (
                                               <>
                                                 {data[keyName].map((value: string, index: number) => (
@@ -940,6 +1033,8 @@ const Home = ({
                                           onSign(data, true);
                                         }}
                                       >
+                                        {data.cancel_signatures &&
+                                          data.cancel_signatures.length + "/" + signaturesRequired}{" "}
                                         Cancel sign
                                       </button>
                                       <button

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Address, AddressInput, Balance, EtherInput, InputBase, ROUTE_TYPES, TX_STATUS } from "../scaffold-eth";
+import { fetchEnsAddress } from "@wagmi/core";
 import axios from "axios";
 import { ethers } from "ethers";
 import moment from "moment";
-import { type } from "os";
+import { TrashIcon } from "@heroicons/react/24/outline";
 
 enum PROPOSAL_TYPES {
   SEND_ETH,
@@ -11,6 +12,8 @@ enum PROPOSAL_TYPES {
   CUSTOM_CALL,
   SPLIT_ETH,
 }
+
+const isENS = (address = "") => address.endsWith(".eth") || address.endsWith(".xyz");
 export const ProposalModal = ({
   isProposalModalOpen,
   setIsProposalModalOpen,
@@ -37,8 +40,10 @@ export const ProposalModal = ({
   const [manageOwnerType, setManageOwnerType] = useState<string>("");
   const [signatureRequired, setSignatureRequired] = useState<string>("");
   const [customNonce, setCustomNonce] = useState<string>("");
-
   const [amount, setAmount] = useState<string>();
+  const [splitAddresses, setSplitAddresses] = useState<string>();
+  const [finalSplitAddresses, setFinalSplitAddresses] = useState<string[]>();
+  const [isFetchingAddress, setIsFetchingAddress] = useState<boolean>(false);
 
   const onChangeTab = (tabType: PROPOSAL_TYPES) => {
     setCurrentTab(tabType);
@@ -55,6 +60,8 @@ export const ProposalModal = ({
     setSignerAddress("");
     setManageOwnerType("");
     setSignatureRequired("");
+    setFinalSplitAddresses([]);
+    setSplitAddresses("");
   };
 
   const onPropose = async () => {
@@ -98,7 +105,8 @@ export const ProposalModal = ({
 
       if (PROPOSAL_TYPES.MANAGE_OWNERS === currentTab) {
         const executeToAddress = walletContract?.address;
-        const nonce = await walletContract?.nonce();
+        const currentNonce = await walletContract?.nonce();
+        const nonce = Boolean(customNonce) ? customNonce : Number(currentNonce?.toString()) + Number(poolTxNumber);
 
         const callData = walletContract?.interface?.encodeFunctionData(manageOwnerType, [
           signerAddress,
@@ -141,7 +149,8 @@ export const ProposalModal = ({
 
       if (PROPOSAL_TYPES.CUSTOM_CALL === currentTab) {
         const executeToAddress = recipient;
-        const nonce = await walletContract?.nonce();
+        const currentNonce = await walletContract?.nonce();
+        const nonce = Boolean(customNonce) ? customNonce : Number(currentNonce?.toString()) + Number(poolTxNumber);
 
         const callData = customCallData;
 
@@ -180,11 +189,12 @@ export const ProposalModal = ({
       }
       if (PROPOSAL_TYPES.SPLIT_ETH === currentTab) {
         const executeToAddress = walletContract?.address;
-        const nonce = await walletContract?.nonce();
+        const currentNonce = await walletContract?.nonce();
+        const nonce = Boolean(customNonce) ? customNonce : Number(currentNonce?.toString()) + Number(poolTxNumber);
 
-        const callData = walletContract?.interface?.encodeFunctionData("splitEqualETH", [
-          [address, "0xDc33aB45de06754C667d438f1C975C3c45a986E1"],
-        ]);
+        const callData =
+          finalSplitAddresses &&
+          walletContract?.interface?.encodeFunctionData("splitEqualETH", [[...finalSplitAddresses]]);
 
         const newHash = await walletContract?.getTransactionHash(
           nonce,
@@ -207,7 +217,8 @@ export const ProposalModal = ({
           hash: newHash,
           signatures: [signature],
           signers: [recover],
-          type: "split_eth",
+          type: "Split Eth",
+          split_addresses: [...(finalSplitAddresses as string[])],
           status: TX_STATUS.IN_QUEUE,
           createdAt: moment().format("YYYY-MM-DD HH:mm"),
           // executedAt: "10-10-2023 10:10",
@@ -226,6 +237,39 @@ export const ProposalModal = ({
       console.log("n-Error: ", error);
     }
   };
+
+  const sortSplitAddresses = async () => {
+    const addresses = splitAddresses?.trim()?.split(",");
+    const finalAddresses: string[] = [];
+    if (addresses) {
+      setIsFetchingAddress(true);
+      for (const address of addresses) {
+        if (ethers.utils.isAddress(address)) {
+          finalAddresses.push(address);
+        } else if (isENS(address)) {
+          const ensName = address;
+          const resolvedAddress = await fetchEnsAddress({
+            name: ensName,
+            chainId: 1,
+          });
+          finalAddresses.push(resolvedAddress as string);
+        }
+      }
+    }
+
+    setFinalSplitAddresses(finalAddresses);
+    setIsFetchingAddress(false);
+  };
+
+  const removeSplitAddress = async address => {
+    setFinalSplitAddresses(finalSplitAddresses?.filter(value => value !== address));
+  };
+
+  useEffect(() => {
+    if (splitAddresses) {
+      sortSplitAddresses();
+    }
+  }, [splitAddresses]);
 
   return (
     <div className="">
@@ -328,11 +372,38 @@ export const ProposalModal = ({
               {PROPOSAL_TYPES.SPLIT_ETH === currentTab && (
                 <div className="m-2">
                   <div className="m-2">
-                    <AddressInput value={recipient} onChange={setRecipient} placeholder="Enter recipient address" />
+                    <EtherInput value={amount as string} onChange={setAmount} placeholder="Enter amount" />
                   </div>
 
-                  <div className="m-2">
-                    <EtherInput value={amount as string} onChange={setAmount} placeholder="Enter amount" />
+                  <div className="m-2 w-full">
+                    <textarea
+                      disabled={isFetchingAddress}
+                      onChange={event => setSplitAddresses(event.target.value)}
+                      placeholder="paste comma separated address list"
+                      className="textarea textarea-bordered  w-[95%]"
+                    ></textarea>
+                  </div>
+
+                  <div className="m-2 w-full flex justify-center">
+                    {isFetchingAddress && <progress className="progress progress-primary w-1/2"></progress>}
+                  </div>
+
+                  <div className="m-2 w-full">
+                    {finalSplitAddresses?.map(address => {
+                      return (
+                        <div key={address} className="flex items-center">
+                          <Address address={address} />
+                          <button
+                            className=""
+                            onClick={() => {
+                              removeSplitAddress(address);
+                            }}
+                          >
+                            <TrashIcon width={19} className="text-error" />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -358,6 +429,8 @@ export const ProposalModal = ({
                   ? !manageOwnerType || !signerAddress || !signatureRequired
                   : currentTab === 2
                   ? !recipient || !customCallData || !amount
+                  : currentTab === 3
+                  ? !amount || !finalSplitAddresses
                   : false
               }
             >

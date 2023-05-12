@@ -1,9 +1,13 @@
+import kv from "@vercel/kv";
 import { ROUTE_TYPES, TX_STATUS } from "~~/components/scaffold-eth";
 
-const transactions: any = {};
+// const transactions: any = {};
 
-export default function handler(request: Request | any, response: Response | any) {
+export default async function handler(request: Request | any, response: Response | any) {
   if (request.method === "POST") {
+    const transactions: any = await kv.hget("userSession", "transactions");
+    console.log(`n-🔴 => handler => transactions:`, transactions);
+
     const { reqType, walletAddress, currentNonce, chainId, tx_type } = request.body;
 
     if (reqType === ROUTE_TYPES.GET_POOL) {
@@ -40,11 +44,13 @@ export default function handler(request: Request | any, response: Response | any
           transactions[key] = [{ ...request.body }];
         }
 
+        await kv.hset("userSession", { transactions });
         return response.json({ transactions });
       }
 
       if (transactions[key]) {
         transactions[key].push({ ...request.body });
+        await kv.hset("userSession", { transactions });
         return response.json({ transactions });
       }
     }
@@ -63,6 +69,8 @@ export default function handler(request: Request | any, response: Response | any
           }
           return txData;
         });
+
+        await kv.hset("userSession", { transactions });
         return response.json({ data: transactions[key] });
       }
     }

@@ -1,18 +1,20 @@
-import kv from "@vercel/kv";
+import axios from "axios";
 import { ROUTE_TYPES, TX_STATUS } from "~~/components/scaffold-eth";
 
 // const transactions: any = {};
-const APP_DB_NAME = "multisig_lol";
+const API = "https://gorgeous-leather-jacket-crow.cyclic.app/multisig-lol";
 
 export default async function handler(request: Request | any, response: Response | any) {
   if (request.method === "POST") {
-    const transactions: any = await kv.hget(APP_DB_NAME, "transactions");
-    if (!transactions) {
-      await kv.hset(APP_DB_NAME, { transactions: {} });
-      return { data: [] };
-    }
+    const result = await axios.get(API);
+    console.log(`n-🔴 => handler => result:`, result.data);
+    const { transactions } = await result.data;
 
     const { reqType, walletAddress, currentNonce, chainId, tx_type } = request.body;
+    if (!transactions) {
+      await axios.post(API, { transactions: {} });
+      return response.json({ data: [] });
+    }
 
     if (reqType === ROUTE_TYPES.GET_POOL) {
       const key = walletAddress + "_" + chainId;
@@ -50,13 +52,14 @@ export default async function handler(request: Request | any, response: Response
           transactions[key] = [{ ...request.body }];
         }
 
-        await kv.hset(APP_DB_NAME, { transactions });
+        await axios.post(API, { transactions });
         return response.json({ transactions });
       }
 
       if (transactions[key]) {
         transactions[key].push({ ...request.body });
-        await kv.hset(APP_DB_NAME, { transactions });
+
+        await axios.post(API, { transactions });
         return response.json({ transactions });
       }
     }
@@ -76,8 +79,7 @@ export default async function handler(request: Request | any, response: Response
           return txData;
         });
 
-        console.log(`n-🔴 => handler => transactions:`, transactions);
-        await kv.hset(APP_DB_NAME, { transactions });
+        await axios.post(API, { transactions });
         return response.json({ data: transactions[key] });
       }
     }

@@ -305,12 +305,12 @@ export const ProposalModal = ({
                 Custom call
               </a>
 
-              <a
+              {/* <a
                 className={`tab tab-lifted ${PROPOSAL_TYPES.SPLIT_ETH === currentTab && "tab-active"}`}
                 onClick={() => onChangeTab(PROPOSAL_TYPES.SPLIT_ETH)}
               >
                 Split eth
-              </a>
+              </a> */}
             </div>
             {/* body content */}
             <div>

@@ -600,7 +600,7 @@ const Home = ({
 
   useEffect(() => {
     if (chains.length > 0) {
-      setChainData(chains.filter(item => [11155111, 31337].includes(item.id)));
+      setChainData(chains);
     }
   }, [chains]);
 

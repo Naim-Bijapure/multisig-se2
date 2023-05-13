@@ -1,7 +1,7 @@
-import contracts from "../../components/generated/hardhat_contracts";
 import { Abi, AbiParametersToPrimitiveTypes, ExtractAbiEvent, ExtractAbiEventNames, ExtractAbiFunction } from "abitype";
 import type { ExtractAbiFunctionNames } from "abitype";
 import { UseContractReadConfig, UseContractWriteConfig } from "wagmi";
+import contracts from "~~/generated/hardhat_contracts";
 import scaffoldConfig from "~~/scaffold.config";
 
 export type Chain = keyof typeof contracts;

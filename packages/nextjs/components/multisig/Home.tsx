@@ -142,9 +142,9 @@ const Home = ({
     },
   });
 
-  useInterval(() => {
-    setTogglePool(() => !togglePool);
-  }, 10000);
+  // useInterval(() => {
+  //   setTogglePool(() => !togglePool);
+  // }, 10000);
 
   // methods
   const onChangeTab = (tabType: MAIN_TABS) => {

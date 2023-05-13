@@ -2,11 +2,15 @@ import kv from "@vercel/kv";
 import { ROUTE_TYPES, TX_STATUS } from "~~/components/scaffold-eth";
 
 // const transactions: any = {};
+const APP_DB_NAME = "multisig";
 
 export default async function handler(request: Request | any, response: Response | any) {
   if (request.method === "POST") {
-    const transactions: any = await kv.hget("userSession", "transactions");
-    console.log(`n-🔴 => handler => transactions:`, transactions);
+    const transactions: any = await kv.hget(APP_DB_NAME, "transactions");
+    if (!transactions) {
+      await kv.hset(APP_DB_NAME, { transactions: {} });
+      return { data: [] };
+    }
 
     const { reqType, walletAddress, currentNonce, chainId, tx_type } = request.body;
 
@@ -46,13 +50,13 @@ export default async function handler(request: Request | any, response: Response
           transactions[key] = [{ ...request.body }];
         }
 
-        await kv.hset("userSession", { transactions });
+        await kv.hset(APP_DB_NAME, { transactions });
         return response.json({ transactions });
       }
 
       if (transactions[key]) {
         transactions[key].push({ ...request.body });
-        await kv.hset("userSession", { transactions });
+        await kv.hset(APP_DB_NAME, { transactions });
         return response.json({ transactions });
       }
     }
@@ -72,7 +76,8 @@ export default async function handler(request: Request | any, response: Response
           return txData;
         });
 
-        await kv.hset("userSession", { transactions });
+        console.log(`n-🔴 => handler => transactions:`, transactions);
+        await kv.hset(APP_DB_NAME, { transactions });
         return response.json({ data: transactions[key] });
       }
     }

@@ -18,7 +18,8 @@ export default async function handler(request: Request | any, response: Response
 
       if (transactions[key]) {
         if (tx_type === TX_STATUS.IN_QUEUE) {
-          const filteredPool = transactions[key].filter(data => data.nonce >= currentNonce);
+          const filteredPool = transactions[key].filter(data => +data.nonce >= +currentNonce);
+          // console.log(`n-🔴 => handler => filteredPool:`, filteredPool);
 
           return response.json({ data: filteredPool });
         }
@@ -30,7 +31,8 @@ export default async function handler(request: Request | any, response: Response
 
           // return response.json({ data: filteredPool });
 
-          const filteredPool = transactions[key].filter(data => data.nonce < currentNonce);
+          const filteredPool = transactions[key].filter(data => +data.nonce < +currentNonce);
+          // console.log(`n-🔴 => handler => filteredPool:`, filteredPool);
 
           return response.json({ data: filteredPool });
         }

@@ -21,6 +21,7 @@ import {
   TX_STATUS,
 } from "~~/components/scaffold-eth";
 import { useDeployedContractInfo, useEvent, useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth";
+import { notification } from "~~/utils/scaffold-eth";
 
 // const Sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
@@ -53,61 +54,7 @@ const poolData = [
     executedAt: "10-10-2023 10:10",
     executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
     createdBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
-  },
-
-  {
-    txId: 22322,
-    chainId: 31337,
-    walletAddress: "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975",
-    nonce: "1",
-    to: "0x0fAb64624733a7020D332203568754EB1a37DB89",
-    amount: 0.0007152513035455008,
-    data: "0x",
-    cancel_data: "0x",
-    hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
-    cancel_hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
-    signatures: [
-      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
-      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
-    ],
-    signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89", "0x0fAb64624733a7020D332203568754EB1a37DB89"],
-    split_addresses: [],
-    cancel_signatures: [],
-    cancel_signers: [],
-    type: "transfer",
-    status: "success",
-    url: "https://example.com",
-    createdAt: "10-10-2023 10:10",
-    executedAt: "10-10-2023 10:10",
-    executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
-    createdBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
-  },
-  {
-    txId: 22323,
-    chainId: 31337,
-    walletAddress: "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975",
-    nonce: "2",
-    to: "0x0fAb64624733a7020D332203568754EB1a37DB89",
-    amount: 0.0007152513035455008,
-    data: "0x",
-    cancel_data: "0x",
-    hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
-    cancel_hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
-    signatures: [
-      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
-      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
-    ],
-    signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89", "0x0fAb64624733a7020D332203568754EB1a37DB89"],
-    split_addresses: [],
-    cancel_signatures: [],
-    cancel_signers: [],
-    type: "transfer",
-    status: "success",
-    url: "https://example.com",
-    createdAt: "10-10-2023 10:10",
-    executedAt: "10-10-2023 10:10",
-    executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
-    createdBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    isCancel: false,
   },
 ];
 const skipTxKey = ["txId", "chainId", "url", "status", "reqType"];
@@ -197,7 +144,7 @@ const Home = ({
 
   useInterval(() => {
     setTogglePool(() => !togglePool);
-  }, 15000);
+  }, 10000);
 
   // methods
   const onChangeTab = (tabType: MAIN_TABS) => {
@@ -372,6 +319,7 @@ const Home = ({
       chainId: chain?.id,
       tx_type: TX_STATUS.IN_QUEUE,
     });
+
     setTxPool(response.data.data);
 
     const response2 = await axios.post("/api/pool", {
@@ -382,9 +330,11 @@ const Home = ({
       tx_type: TX_STATUS.COMPLETED,
     });
     setTxPoolHistory(response2.data.data);
+    toast.dismiss();
   };
 
   const onSign = async (item: any, isCancel = false, isNonceUpdate = false) => {
+    const toastId = notification.loading("wait signing !");
     if (isCancel) {
       item.data = "0x";
       item.amount = 0;
@@ -419,6 +369,7 @@ const Home = ({
             signers: [...new Set([...signers, address])],
             cancel_signatures: [],
             cancel_signers: [],
+            isCancel: false,
           },
         };
       }
@@ -434,12 +385,13 @@ const Home = ({
           chainId: chain?.id,
           newData: {
             cancel_hash: newHash,
-            amount: "0",
+            cancel_amount: "0",
             cancel_data: "0x",
             cancel_signatures: [...new Set([...cancel_signatures, signature])],
             cancel_signers: [...new Set([...cancel_signers, address])],
             signatures: [],
             signers: [],
+            isCancel: true,
           },
         };
       }
@@ -463,7 +415,10 @@ const Home = ({
       const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.UPDATE_TX, ...reqData });
       setEditedTxNonce(undefined);
       setIsConfirmNonceOpen(false);
-      setTogglePool(!togglePool);
+
+      setTimeout(() => {
+        setTogglePool(() => !togglePool);
+      }, 1000);
     }
   };
 
@@ -500,6 +455,7 @@ const Home = ({
       item.data = item.cancel_data;
       item.signatures = [...item.cancel_signatures];
       item.hash = item.cancel_hash;
+      item.amount = item.cancel_amount;
     }
 
     const newHash = await walletContract?.getTransactionHash(
@@ -537,7 +493,8 @@ const Home = ({
       const rcpt = await tx?.wait();
       setTogglePool(!togglePool);
     } catch (e) {
-      console.log("Failed to estimate gas");
+      notification.error(e.message);
+      console.log("error in execution");
     }
   };
 
@@ -574,48 +531,56 @@ const Home = ({
   };
 
   const onBatchExecute = async () => {
-    const toExecutedPool = txPool
-      .filter(item => {
-        return selectedTxs.includes(item.txId);
-      })
-      .sort((itemA, itemB) => itemA.nonce - itemB.nonce);
+    try {
+      const toExecutedPool = txPool
+        .filter(item => {
+          return selectedTxs.includes(item.txId);
+        })
+        .sort((itemA, itemB) => itemA.nonce - itemB.nonce);
 
-    const batchValues: { to: string[]; value: any[]; data: string[]; signatures: string[][] } = {
-      to: [],
-      value: [],
-      data: [],
-      signatures: [],
-    };
-    let i = +toExecutedPool[0].nonce;
+      const batchValues: { to: string[]; value: any[]; data: string[]; signatures: string[][] } = {
+        to: [],
+        value: [],
+        data: [],
+        signatures: [],
+      };
+      let i = +toExecutedPool[0].nonce;
+      let isExecutable = true;
 
-    for (const iterator of toExecutedPool) {
-      if (+iterator.nonce === i) {
-        batchValues.to.push(iterator.to);
-        batchValues.value.push(ethers.utils.parseEther("" + parseFloat(iterator.amount).toFixed(12)));
-        batchValues.data.push(iterator.data);
-        batchValues.signatures.push(iterator.signatures);
+      for (const iterator of toExecutedPool) {
+        console.log(`n-🔴 => onBatchExecute => +iterator.nonce:`, +iterator.nonce, i);
+        if (+iterator.nonce === i) {
+          batchValues.to.push(iterator.to);
+          batchValues.value.push(ethers.utils.parseEther("" + parseFloat(iterator.amount).toFixed(12)));
+          batchValues.data.push(iterator.data);
+          batchValues.signatures.push(iterator.signatures);
+        }
+
+        if (+iterator.nonce !== i) {
+          isExecutable = false;
+          break;
+        }
+
+        i += 1;
       }
 
-      if (+iterator.nonce !== i) {
-        break;
+      if (isExecutable) {
+        const batchExecuteFunc = walletContract?.executeBatch(
+          batchValues.to,
+          batchValues.value,
+          batchValues.data,
+          batchValues.signatures,
+          { gasLimit: 1000000 },
+        );
+        const tx = await Tx(batchExecuteFunc);
+        const rcpt = await tx?.wait();
+        setSelectedTxs([]);
+      } else {
+        toast.error("Selected transaction nonce order is incorrect!");
       }
-
-      i += 1;
-    }
-
-    if (i === selectedTxs.length) {
-      const batchExecuteFunc = walletContract?.executeBatch(
-        batchValues.to,
-        batchValues.value,
-        batchValues.data,
-        batchValues.signatures,
-        { gasLimit: 1000000 },
-      );
-      const tx = await Tx(batchExecuteFunc);
-      const rcpt = await tx?.wait();
-      setSelectedTxs([]);
-    } else {
-      toast.error("Selected transaction nonce order is incorrect!");
+    } catch (error) {
+      console.log(`n-🔴 => onBatchExecute => error:`, error);
+      notification.error(error.message);
     }
   };
 
@@ -635,7 +600,7 @@ const Home = ({
 
   useEffect(() => {
     if (chains.length > 0) {
-      setChainData(chains);
+      setChainData(chains.filter(item => [11155111, 31337].includes(item.id)));
     }
   }, [chains]);
 
@@ -980,7 +945,7 @@ const Home = ({
 
                                         <td>
                                           {ethers.utils.isAddress(data[keyName]) ||
-                                          ["hash", "data", "cancel_hash"].includes(keyName) ? (
+                                          ["hash", "data", "cancel_hash", "cancel_data"].includes(keyName) ? (
                                             <Address address={data[keyName]} />
                                           ) : keyName == "amount" ? (
                                             Number(data[keyName]).toFixed(4)
@@ -1009,7 +974,6 @@ const Home = ({
                                               "split_addresses",
                                               "cancel_signatures",
                                               "cancel_signers",
-                                              "cancel_data",
                                               "cancel_hash",
                                             ].includes(keyName) ? (
                                             data[keyName] &&
@@ -1075,78 +1039,84 @@ const Home = ({
               <div className="w-[60%] mt-4 absolute">
                 {txPoolHistory &&
                   txPoolHistory.length > 0 &&
-                  txPoolHistory.map((data, index) => {
-                    return (
-                      <div
-                        key={data.txId}
-                        // tabIndex={0}
-                        className={`collapse collapse-arrow border border-base-300 bg-base-100 rounded-box m-2 ${
-                          activeTab === index && "collapse-open"
-                        }`}
-                        onClick={event => {
-                          event.stopPropagation();
-                          if (index !== activeTab) {
-                            setActiveTab(index);
-                          } else {
-                            setActiveTab(undefined);
-                          }
-                        }}
-                      >
-                        {/* <input type="checkbox" /> */}
+                  txPoolHistory
+                    .sort((dataA, dataB) => dataB.nonce - dataA.nonce)
+                    .map((data, index) => {
+                      return (
+                        <div
+                          key={data.txId}
+                          // tabIndex={0}
+                          className={`collapse collapse-arrow border border-base-300 bg-base-100 rounded-box m-2 ${
+                            activeTab === index && "collapse-open"
+                          }`}
+                          onClick={event => {
+                            event.stopPropagation();
+                            if (index !== activeTab) {
+                              setActiveTab(index);
+                            } else {
+                              setActiveTab(undefined);
+                            }
+                          }}
+                        >
+                          {/* <input type="checkbox" /> */}
 
-                        <div className="collapse-title text-sm font-medium flex justify-around">
-                          <div># {data.nonce}</div>
-                          <div>{data.type}</div>
-                          <div>{data.createdAt}</div>
-                        </div>
-                        <div className="collapse-content bg-base-300">
-                          <div className="overflow-x-auto mt-2">
-                            <table className="table table-zebra w-full">
-                              <tbody>
-                                {Object.keys(data)
-                                  .filter(keyName => !skipTxKey.includes(keyName))
-                                  .map(keyName => (
-                                    <tr key={keyName} className="hover">
-                                      <td></td>
-                                      <td>{keyName}</td>
+                          <div
+                            className={`collapse-title text-sm font-medium flex justify-around ${
+                              data.isCancel ? "bg-red-100" : "bg-green-100"
+                            }`}
+                          >
+                            <div># {data.nonce}</div>
+                            <div>{data.type}</div>
+                            <div>{data.createdAt}</div>
+                          </div>
+                          <div className="collapse-content bg-base-300">
+                            <div className="overflow-x-auto mt-2">
+                              <table className="table table-zebra w-full">
+                                <tbody>
+                                  {Object.keys(data)
+                                    .filter(keyName => !skipTxKey.includes(keyName))
+                                    .map(keyName => (
+                                      <tr key={keyName} className="hover">
+                                        <td></td>
+                                        <td>{keyName}</td>
 
-                                      <td>
-                                        {ethers.utils.isAddress(data[keyName]) || ["hash", "data"].includes(keyName) ? (
-                                          <Address address={data[keyName]} />
-                                        ) : keyName == "amount" ? (
-                                          Number(data[keyName]).toFixed(4)
-                                        ) : [
-                                            "signatures",
-                                            "signers",
-                                            "cancel_signatures",
-                                            "cancel_signers",
-                                            "cancel_data",
-                                            "cancel_hash",
-                                          ].includes(keyName) ? (
-                                          data[keyName] &&
-                                          data[keyName].length > 0 && (
-                                            <>
-                                              {data[keyName].map((value: string, index: any) => (
-                                                <div key={index}>
-                                                  <Address address={value} />
-                                                </div>
-                                              ))}
-                                            </>
-                                          )
-                                        ) : (
-                                          data[keyName]
-                                        )}
-                                      </td>
-                                      <td></td>
-                                    </tr>
-                                  ))}
-                              </tbody>
-                            </table>
+                                        <td>
+                                          {ethers.utils.isAddress(data[keyName]) ||
+                                          ["hash", "data", "cancel_data", "cancel_hash"].includes(keyName) ? (
+                                            <Address address={data[keyName]} />
+                                          ) : keyName == "amount" ? (
+                                            Number(data[keyName]).toFixed(4)
+                                          ) : [
+                                              "signatures",
+                                              "signers",
+                                              "cancel_signatures",
+                                              "cancel_signers",
+                                              "split_addresses",
+                                            ].includes(keyName) ? (
+                                            data[keyName] &&
+                                            data[keyName].length > 0 && (
+                                              <>
+                                                {data[keyName].map((value: string, index: any) => (
+                                                  <div key={index}>
+                                                    <Address address={value} />
+                                                  </div>
+                                                ))}
+                                              </>
+                                            )
+                                          ) : (
+                                            data[keyName]
+                                          )}
+                                        </td>
+                                        <td></td>
+                                      </tr>
+                                    ))}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
 
                 {txPoolHistory.length === 0 && (
                   <div className="flex justify-center text-gray-400 mt-2">No history transcactions !</div>

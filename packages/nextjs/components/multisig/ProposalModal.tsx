@@ -4,7 +4,9 @@ import { fetchEnsAddress } from "@wagmi/core";
 import axios from "axios";
 import { ethers } from "ethers";
 import moment from "moment";
+import { toast } from "react-hot-toast";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { notification } from "~~/utils/scaffold-eth";
 
 enum PROPOSAL_TYPES {
   SEND_ETH,
@@ -65,6 +67,7 @@ export const ProposalModal = ({
   };
 
   const onPropose = async () => {
+    const toastId = notification.loading("hold on creating proposal !");
     try {
       if (PROPOSAL_TYPES.SEND_ETH === currentTab) {
         const callData = "0x";
@@ -231,9 +234,12 @@ export const ProposalModal = ({
         }
       }
 
+      toast.dismiss(toastId);
       setIsProposalModalOpen(false);
       resetData();
     } catch (error) {
+      toast.dismiss(toastId);
+      notification.error(error.message);
       console.log("n-Error: ", error);
     }
   };

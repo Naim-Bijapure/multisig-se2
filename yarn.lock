@@ -2913,7 +2913,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@upstash/redis@npm:1.20.6":
+"@upstash/redis@npm:1.20.6, @upstash/redis@npm:^1.20.6":
   version: 1.20.6
   resolution: "@upstash/redis@npm:1.20.6"
   dependencies:
@@ -11874,6 +11874,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
+    "@upstash/redis": ^1.20.6
     husky: ^8.0.1
     lint-staged: ^13.0.3
   languageName: unknown

@@ -1,18 +1,22 @@
-import axios from "axios";
+import { Redis } from "@upstash/redis";
 import { ROUTE_TYPES, TX_STATUS } from "~~/components/scaffold-eth";
 
 let transactions: any = {};
 
-// naim's free json storage
-const API = "https://gorgeous-leather-jacket-crow.cyclic.app/multisig";
+const IS_LOCAL_TX_STORAGE = false; // set true if you want to use local tx storage
 
-const IS_LOCAL_TX_STORAGE = true; // set true if you want to use local tx storage
+const redis = new Redis({
+  url: process.env.UPSTASH_URL as string,
+  token: process.env.UPSTASH_TOKEN as string,
+});
 
 export default async function handler(request: Request | any, response: Response | any) {
   if (request.method === "POST") {
     if (!IS_LOCAL_TX_STORAGE) {
-      const result = await axios.get(API);
-      transactions = await result.data.transactions;
+      transactions = await redis.hgetall("transactions");
+      if (transactions) {
+        await redis.hset("transactions", { empty: "" });
+      }
     }
     console.log(`n-🔴 => handler => transactions:`, transactions);
 
@@ -33,14 +37,7 @@ export default async function handler(request: Request | any, response: Response
         }
 
         if (tx_type === TX_STATUS.COMPLETED) {
-          // const filteredPool = transactions[key]
-          //   .filter(item => item.nonce < currentNonce && item.status === TX_STATUS.COMPLETED)
-          //   .sort((A, B) => B.nonce - A.nonce);
-
-          // return response.json({ data: filteredPool });
-
           const filteredPool = transactions[key].filter(data => +data.nonce < +currentNonce);
-          // console.log(`n-🔴 => handler => filteredPool:`, filteredPool);
 
           return response.json({ data: filteredPool });
         }
@@ -55,7 +52,7 @@ export default async function handler(request: Request | any, response: Response
         }
 
         if (!IS_LOCAL_TX_STORAGE) {
-          await axios.post(API, { transactions });
+          await redis.hset("transactions", { ...transactions });
         }
         return response.json({ transactions });
       }
@@ -64,7 +61,7 @@ export default async function handler(request: Request | any, response: Response
         transactions[key].push({ ...request.body });
 
         if (!IS_LOCAL_TX_STORAGE) {
-          await axios.post(API, { transactions });
+          await redis.hset("transactions", { ...transactions });
         }
         return response.json({ transactions });
       }
@@ -86,7 +83,7 @@ export default async function handler(request: Request | any, response: Response
         });
 
         if (!IS_LOCAL_TX_STORAGE) {
-          await axios.post(API, { transactions });
+          await redis.hset("transactions", { ...transactions });
         }
         return response.json({ data: transactions[key] });
       }

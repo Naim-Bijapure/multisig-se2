@@ -4,6 +4,7 @@ import { ROUTE_TYPES, TX_STATUS } from "~~/components/scaffold-eth";
 let transactions: any = {};
 
 const IS_LOCAL_TX_STORAGE = false; // set true if you want to use local tx storage
+const TX_COLLECTION_NAME = "transactions";
 
 const redis = new Redis({
   url: process.env.UPSTASH_URL as string,
@@ -13,9 +14,9 @@ const redis = new Redis({
 export default async function handler(request: Request | any, response: Response | any) {
   if (request.method === "POST") {
     if (!IS_LOCAL_TX_STORAGE) {
-      transactions = await redis.hgetall("transactions");
-      if (transactions) {
-        await redis.hset("transactions", { empty: "" });
+      transactions = await redis.hgetall(TX_COLLECTION_NAME);
+      if (!transactions) {
+        await redis.hset(TX_COLLECTION_NAME, { empty: "" });
       }
     }
     console.log(`n-🔴 => handler => transactions:`, transactions);
@@ -52,7 +53,7 @@ export default async function handler(request: Request | any, response: Response
         }
 
         if (!IS_LOCAL_TX_STORAGE) {
-          await redis.hset("transactions", { ...transactions });
+          await redis.hset(TX_COLLECTION_NAME, { ...transactions });
         }
         return response.json({ transactions });
       }
@@ -61,7 +62,7 @@ export default async function handler(request: Request | any, response: Response
         transactions[key].push({ ...request.body });
 
         if (!IS_LOCAL_TX_STORAGE) {
-          await redis.hset("transactions", { ...transactions });
+          await redis.hset(TX_COLLECTION_NAME, { ...transactions });
         }
         return response.json({ transactions });
       }
@@ -83,7 +84,7 @@ export default async function handler(request: Request | any, response: Response
         });
 
         if (!IS_LOCAL_TX_STORAGE) {
-          await redis.hset("transactions", { ...transactions });
+          await redis.hset(TX_COLLECTION_NAME, { ...transactions });
         }
         return response.json({ data: transactions[key] });
       }

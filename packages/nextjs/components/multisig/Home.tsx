@@ -144,7 +144,7 @@ const Home = ({
 
   useInterval(() => {
     setTogglePool(() => !togglePool);
-  }, 10000);
+  }, 15000);
 
   // methods
   const onChangeTab = (tabType: MAIN_TABS) => {

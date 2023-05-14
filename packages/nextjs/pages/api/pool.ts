@@ -1,16 +1,20 @@
-import kv from "@vercel/kv";
+import axios from "axios";
 import { ROUTE_TYPES, TX_STATUS } from "~~/components/scaffold-eth";
 
-// const transactions: any = {};
-const APP_DB_NAME = "multisig";
+let transactions: any = {};
+
+// naim's free json storage
+const API = "https://gorgeous-leather-jacket-crow.cyclic.app/multisig";
+
+const IS_LOCAL_TX_STORAGE = true; // set true if you want to use local tx storage
 
 export default async function handler(request: Request | any, response: Response | any) {
   if (request.method === "POST") {
-    const transactions: any = await kv.hget(APP_DB_NAME, "transactions");
-    if (!transactions) {
-      await kv.hset(APP_DB_NAME, { transactions: {} });
-      return { data: [] };
+    if (!IS_LOCAL_TX_STORAGE) {
+      const result = await axios.get(API);
+      transactions = await result.data.transactions;
     }
+    console.log(`n-🔴 => handler => transactions:`, transactions);
 
     const { reqType, walletAddress, currentNonce, chainId, tx_type } = request.body;
 
@@ -50,13 +54,18 @@ export default async function handler(request: Request | any, response: Response
           transactions[key] = [{ ...request.body }];
         }
 
-        await kv.hset(APP_DB_NAME, { transactions });
+        if (!IS_LOCAL_TX_STORAGE) {
+          await axios.post(API, { transactions });
+        }
         return response.json({ transactions });
       }
 
       if (transactions[key]) {
         transactions[key].push({ ...request.body });
-        await kv.hset(APP_DB_NAME, { transactions });
+
+        if (!IS_LOCAL_TX_STORAGE) {
+          await axios.post(API, { transactions });
+        }
         return response.json({ transactions });
       }
     }
@@ -76,8 +85,9 @@ export default async function handler(request: Request | any, response: Response
           return txData;
         });
 
-        console.log(`n-🔴 => handler => transactions:`, transactions);
-        await kv.hset(APP_DB_NAME, { transactions });
+        if (!IS_LOCAL_TX_STORAGE) {
+          await axios.post(API, { transactions });
+        }
         return response.json({ data: transactions[key] });
       }
     }

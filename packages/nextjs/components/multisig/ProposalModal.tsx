@@ -119,7 +119,7 @@ export const ProposalModal = ({
         const newHash = await walletContract?.getTransactionHash(
           nonce,
           executeToAddress,
-          ethers.utils.parseEther("" + parseFloat(amount ? amount : "0").toFixed(12)),
+          ethers.utils.parseEther("" + parseFloat("0").toFixed(12)),
           callData,
         );
         const signature = await signer?.signMessage(ethers.utils.arrayify(newHash));
@@ -132,7 +132,8 @@ export const ProposalModal = ({
           walletAddress: walletContract?.address,
           nonce: nonce?.toString(),
           to: executeToAddress,
-          amount: amount ? amount : 0,
+          [manageOwnerType]: signerAddress,
+          amount: "0",
           data: callData,
           hash: newHash,
           signatures: [signature],
@@ -160,7 +161,7 @@ export const ProposalModal = ({
         const newHash = await walletContract?.getTransactionHash(
           nonce,
           executeToAddress,
-          ethers.utils.parseEther("" + parseFloat(amount ? amount : "0").toFixed(12)),
+          ethers.utils.parseEther("" + parseFloat("0").toFixed(12)),
           callData,
         );
         const signature = await signer?.signMessage(ethers.utils.arrayify(newHash));
@@ -173,7 +174,7 @@ export const ProposalModal = ({
           walletAddress: walletContract?.address,
           nonce: nonce?.toString(),
           to: executeToAddress,
-          amount: amount ? amount : 0,
+          amount: "0",
           data: callData,
           hash: newHash,
           signatures: [signature],

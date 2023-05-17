@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 import QRCode from "react-qr-code";
 import { useCopyToClipboard, useDebounce, useInterval, useLocalStorage } from "usehooks-ts";
 import { Chain, useAccount, useNetwork, useSigner, useSwitchNetwork } from "wagmi";
-import { MinusCircleIcon, PlusCircleIcon, ShareIcon } from "@heroicons/react/24/outline";
+import { MinusCircleIcon, PlusCircleIcon, RocketLaunchIcon, ShareIcon } from "@heroicons/react/24/outline";
 import { ConfirmNonceModal } from "~~/components/multisig/ConfirmNonceModal";
 import { ProposalModal } from "~~/components/multisig/ProposalModal";
 import {
@@ -57,7 +57,7 @@ const poolData = [
     isCancel: false,
   },
 ];
-const skipTxKey = ["txId", "chainId", "url", "status", "reqType"];
+const skipTxKey = ["txId", "chainId", "url", "status", "reqType", "isCancel"];
 
 const Home = ({
   chainId,
@@ -330,7 +330,7 @@ const Home = ({
       tx_type: TX_STATUS.COMPLETED,
     });
     setTxPoolHistory(response2.data.data);
-    toast.dismiss();
+    // toast.dismiss();
   };
 
   const onSign = async (item: any, isCancel = false, isNonceUpdate = false) => {
@@ -450,6 +450,7 @@ const Home = ({
   };
 
   const onExecute = async (item, isCancel = false) => {
+    console.log(`n-🔴 => onExecute => item:`, item);
     // override values for cancel tx
     if (isCancel) {
       item.data = item.cancel_data;
@@ -538,7 +539,8 @@ const Home = ({
         })
         .sort((itemA, itemB) => itemA.nonce - itemB.nonce);
 
-      const batchValues: { to: string[]; value: any[]; data: string[]; signatures: string[][] } = {
+      const batchValues: { nonce: number[]; to: string[]; value: any[]; data: string[]; signatures: string[][] } = {
+        nonce: [],
         to: [],
         value: [],
         data: [],
@@ -548,8 +550,8 @@ const Home = ({
       let isExecutable = true;
 
       for (const iterator of toExecutedPool) {
-        console.log(`n-🔴 => onBatchExecute => +iterator.nonce:`, +iterator.nonce, i);
         if (+iterator.nonce === i) {
+          batchValues.nonce.push(iterator.nonce);
           batchValues.to.push(iterator.to);
           batchValues.value.push(ethers.utils.parseEther("" + parseFloat(iterator.amount).toFixed(12)));
           batchValues.data.push(iterator.data);
@@ -572,6 +574,7 @@ const Home = ({
           batchValues.signatures,
           { gasLimit: 1000000 },
         );
+
         const tx = await Tx(batchExecuteFunc);
         const rcpt = await tx?.wait();
         setSelectedTxs([]);
@@ -842,17 +845,17 @@ const Home = ({
               <div className="w-[60%] mt-4 absolute">
                 <div className="m-2">
                   {selectedTxs.length > 0 && (
-                    <div
-                      className="tooltip tooltip-warning z-50"
-                      data-tip="Make sure the selected transaction has an incremental nonce"
-                    >
+                    <div className="z-50 flex justify-start items-center">
                       <button
-                        className="btn btn-xs btn-success capitalize"
+                        className="btn btn-sm btn-success capitalize tooltip tooltip-warning"
                         onClick={onBatchExecute}
                         disabled={isWalletOwner}
+                        data-tip="Make sure the selected transaction has an incremental nonce"
                       >
-                        Execute {selectedTxs.length} tx
+                        {/* Execute {selectedTxs.length} tx */}
+                        <RocketLaunchIcon width={19} className="" />
                       </button>
+                      <div className="text-xs ml-2 text-primary-focus">Execute {selectedTxs.length} tx in batch</div>
                     </div>
                   )}
                 </div>
@@ -945,7 +948,14 @@ const Home = ({
 
                                         <td>
                                           {ethers.utils.isAddress(data[keyName]) ||
-                                          ["hash", "data", "cancel_hash", "cancel_data"].includes(keyName) ? (
+                                          [
+                                            "hash",
+                                            "data",
+                                            "cancel_hash",
+                                            "cancel_data",
+                                            "addSigner",
+                                            "removeSigner",
+                                          ].includes(keyName) ? (
                                             <Address address={data[keyName]} />
                                           ) : keyName == "amount" ? (
                                             Number(data[keyName]).toFixed(4)
@@ -1082,7 +1092,14 @@ const Home = ({
 
                                         <td>
                                           {ethers.utils.isAddress(data[keyName]) ||
-                                          ["hash", "data", "cancel_data", "cancel_hash"].includes(keyName) ? (
+                                          [
+                                            "hash",
+                                            "data",
+                                            "cancel_data",
+                                            "cancel_hash",
+                                            "addSigner",
+                                            "removeSigner",
+                                          ].includes(keyName) ? (
                                             <Address address={data[keyName]} />
                                           ) : keyName == "amount" ? (
                                             Number(data[keyName]).toFixed(4)

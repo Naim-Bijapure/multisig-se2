@@ -925,9 +925,9 @@ const Home = ({
                     </div>
                   )}
                 </div>
-                {poolData &&
-                  poolData.length > 0 &&
-                  poolData
+                {txPool &&
+                  txPool.length > 0 &&
+                  txPool
                     .sort((dataA, dataB) => dataA.nonce - dataB.nonce)
                     .map((data, index) => {
                       return (

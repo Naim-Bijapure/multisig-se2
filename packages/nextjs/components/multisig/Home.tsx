@@ -1203,7 +1203,7 @@ const Home = ({
                     })}
 
                 {txPoolHistory.length === 0 && (
-                  <div className="flex justify-center text-gray-400 mt-2">No history transcactions !</div>
+                  <div className="flex justify-center text-gray-400 mt-2">No transactions history !</div>
                 )}
               </div>
             )}

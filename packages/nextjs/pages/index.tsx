@@ -2,7 +2,7 @@ import Home from "~~/components/multisig/Home";
 
 const index = () => {
   return (
-    <div>
+    <div className="">
       <Home />
     </div>
   );

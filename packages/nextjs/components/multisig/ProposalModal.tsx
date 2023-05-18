@@ -5,6 +5,7 @@ import axios from "axios";
 import { ethers } from "ethers";
 import moment from "moment";
 import { toast } from "react-hot-toast";
+import { useDebounce } from "usehooks-ts";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { notification } from "~~/utils/scaffold-eth";
 
@@ -46,6 +47,8 @@ export const ProposalModal = ({
   const [splitAddresses, setSplitAddresses] = useState<string>();
   const [finalSplitAddresses, setFinalSplitAddresses] = useState<string[]>();
   const [isFetchingAddress, setIsFetchingAddress] = useState<boolean>(false);
+
+  const debounceSplitAddresses = useDebounce(splitAddresses, 2000);
 
   const onChangeTab = (tabType: PROPOSAL_TYPES) => {
     setCurrentTab(tabType);
@@ -273,10 +276,10 @@ export const ProposalModal = ({
   };
 
   useEffect(() => {
-    if (splitAddresses) {
+    if (debounceSplitAddresses) {
       sortSplitAddresses();
     }
-  }, [splitAddresses]);
+  }, [debounceSplitAddresses]);
 
   return (
     <div className="">

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
+import { Footer } from "../Footer";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import axios from "axios";
 import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
 import QRCode from "react-qr-code";
-import { useCopyToClipboard, useDebounce, useInterval, useLocalStorage } from "usehooks-ts";
+import { useCopyToClipboard, useDarkMode, useDebounce, useInterval, useLocalStorage } from "usehooks-ts";
 import { Chain, useAccount, useNetwork, useSigner, useSwitchNetwork } from "wagmi";
 import { MinusCircleIcon, PlusCircleIcon, RocketLaunchIcon, ShareIcon } from "@heroicons/react/24/outline";
 import { ConfirmNonceModal } from "~~/components/multisig/ConfirmNonceModal";
@@ -56,6 +57,63 @@ const poolData = [
     createdBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
     isCancel: false,
   },
+
+  {
+    txId: 22321,
+    chainId: 31337,
+    walletAddress: "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975",
+    nonce: "1",
+    to: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    amount: 0.0007152513035455008,
+    data: "0x",
+    cancel_data: "0x",
+    hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
+    cancel_hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
+    signatures: [
+      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
+      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
+    ],
+    signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89", "0x0fAb64624733a7020D332203568754EB1a37DB89"],
+    split_addresses: [],
+    cancel_signatures: [],
+    cancel_signers: [],
+    type: "transfer",
+    status: "success",
+    url: "https://example.com",
+    createdAt: "10-10-2023 10:10",
+    executedAt: "10-10-2023 10:10",
+    executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    createdBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    isCancel: false,
+  },
+  {
+    txId: 22321,
+    chainId: 31337,
+    walletAddress: "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975",
+    nonce: "2",
+    to: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    amount: 0.0007152513035455008,
+    data: "0x",
+    cancel_data: "0x",
+    hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
+    cancel_hash: "0x58670d26e3add93a7480ceb162ad4b236f6306e260e91d7976c339b9279fee53",
+    signatures: [],
+    signers: ["0x0fAb64624733a7020D332203568754EB1a37DB89", "0x0fAb64624733a7020D332203568754EB1a37DB89"],
+    split_addresses: [],
+    cancel_signatures: [
+      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
+      "0x1f19e9e2bd95ec771926c4eba4c91e0d0da01e91f1188858edee9dd10cc61d7c26dc656a3fc7375053f3f7544136b7db4ed5c391624bb263330e12b5c7f1ed151b",
+    ],
+    cancel_signers: [],
+    type: "transfer",
+    status: "success",
+    url: "https://example.com",
+    createdAt: "10-10-2023 10:10",
+    executedAt: "10-10-2023 10:10",
+    executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    createdBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+    isCancel: false,
+  },
 ];
 const skipTxKey = ["txId", "chainId", "url", "status", "reqType", "isCancel"];
 
@@ -64,9 +122,9 @@ const Home = ({
   walletAddress,
   isSharedWallet = false,
 }: {
-  chainId: string;
-  walletAddress: string;
-  isSharedWallet: boolean;
+  chainId?: string;
+  walletAddress?: string;
+  isSharedWallet?: boolean;
 }) => {
   // states
   const [chainData, setChainData] = useState<Chain[]>();
@@ -83,7 +141,7 @@ const Home = ({
   const [refreshToggle, setRefreshToggle] = useState<boolean>(false);
   const [ownedWallets, setOwnedWallets] = useState<any[]>([]);
   const [userWallets, setUserWallets] = useState([]);
-  const [currentWalletName, setCurrentWalletName] = useState();
+  const [currentWalletName, setCurrentWalletName] = useState<string>("");
   const [toggleChangeWallet, setToggleChangeWallet] = useState<boolean>(false);
   const [signaturesRequired, setSignaturesRequired] = useState<number>();
   const [nonce, setNonce] = useState<number>(0);
@@ -105,7 +163,9 @@ const Home = ({
 
   const [value, copy] = useCopyToClipboard();
 
+  // useHooks
   const debounceWalletName = useDebounce(walletName, 500);
+  const { isDarkMode } = useDarkMode();
 
   // wagmi hooks
   const { chains, switchNetwork } = useSwitchNetwork();
@@ -251,6 +311,7 @@ const Home = ({
           selectedWalletName: walletName,
         },
       });
+      setCurrentWalletName(walletName);
       setToggleChangeWallet(!toggleChangeWallet);
     }
   };
@@ -665,6 +726,7 @@ const Home = ({
 
   return (
     <div
+      className="bg-base-200"
       onClick={() => {
         setActiveTab(undefined);
       }}
@@ -708,18 +770,22 @@ const Home = ({
       </Head>
 
       <div
-        className={`flex flex-col items-start ml-32 mt-6  w-[80%]  ${
+        className={`flex flex-col items-start ml-32 mt-6  w-[80%] ${
           isConnected === false || (isSharedChainMatch === false && isSharedWallet) ? "blur-sm pointer-events-none" : ""
         } `}
         aria-disabled={isConnected === false}
       >
         {/* header action */}
-        <div className="flex flex-col items-start">
-          <div className="flex flex-col items-center my-5">
-            <div className="text-gray-500 text-xl ml-2">Wallet Balance</div>
-            <div className="text-2xl font-bold my-2">
+        <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center my-5 ">
+            <div className="text-xl font-bold -ml-2">
+              {currentWalletName.length > 15 ? currentWalletName?.slice(0, 15) + "..." : currentWalletName}
+            </div>
+            <div className="text-2xl font-bold mt-2">
               <Balance address={isConnected ? currentWalletAddress : previewAddress} className="text-lg font-bold" />
             </div>
+
+            <div className="text-gray-500 text-xs">Wallet Balance</div>
           </div>
 
           <div className="">
@@ -759,7 +825,7 @@ const Home = ({
 
         {/*  */}
         {/* select options */}
-        <div className={`mt-5 flex justify-start  w-[100%] `}>
+        <div className={`mt-5 flex justify-start  w-[100%]`}>
           <div
             className={`${isSharedWallet && "tooltip tooltip-primary"}`}
             data-tip={isSharedWallet && "Goto home menu to change network"}
@@ -813,7 +879,7 @@ const Home = ({
                         chain && walletData[chain?.id] ? walletData[chain?.id].selectedWalletAddress == data.key : false
                       }
                     >
-                      {data.label}
+                      {data.label.length > 15 ? data.label?.slice(0, 15) + "..." : data.label}
                     </option>
                   );
                 })}
@@ -822,10 +888,10 @@ const Home = ({
           <div className={`w-[15%] ${walletList.length === 0 && isConnected && "invisible"}`}>Your wallet</div>
         </div>
 
+        {/* main view */}
+        {/* tabs */}
         <div className={`mt-2 flex justify-start w-full ${walletList.length === 0 && isConnected && "hidden"}`}>
           <div className="w-[80%]">
-            {/* main view */}
-            {/* tabs */}
             <div className="tabs">
               <a
                 className={`tab tab-lifted ${MAIN_TABS.POOL === currentTab && "tab-active"}`}
@@ -842,7 +908,7 @@ const Home = ({
             </div>
             {/* pool content */}
             {MAIN_TABS.POOL === currentTab && (
-              <div className="w-[60%] mt-4 absolute">
+              <div className="w-[95%] mt-4 -absolute">
                 <div className="m-2">
                   {selectedTxs.length > 0 && (
                     <div className="z-50 flex justify-start items-center">
@@ -855,20 +921,20 @@ const Home = ({
                         {/* Execute {selectedTxs.length} tx */}
                         <RocketLaunchIcon width={19} className="" />
                       </button>
-                      <div className="text-xs ml-2 text-primary-focus">Execute {selectedTxs.length} tx in batch</div>
+                      <div className="text-xs ml-2 opacity-50">Execute {selectedTxs.length} tx in batch</div>
                     </div>
                   )}
                 </div>
-                {txPool &&
-                  txPool.length > 0 &&
-                  txPool
+                {poolData &&
+                  poolData.length > 0 &&
+                  poolData
                     .sort((dataA, dataB) => dataA.nonce - dataB.nonce)
                     .map((data, index) => {
                       return (
                         <div
                           key={data.txId}
                           // tabIndex={0}
-                          className={`collapse collapse-arrow border border-base-300 bg-base-100 rounded-box m-2 ${
+                          className={`collapse collapse-arrow border border-base-300 bg-base-100  rounded-lg m-2 ${
                             activeTab === index && "collapse-open"
                           }`}
                           onClick={event => {
@@ -880,12 +946,15 @@ const Home = ({
                             }
                           }}
                         >
-                          {/* <input type="checkbox" /> */}
-
                           <div
                             className={`collapse-title text-sm font-medium flex justify-around ${
-                              data.nonce === nonce && "bg-green-50"
-                            } ${data.cancel_signatures && data.cancel_signatures.length > 0 && "bg-red-50"}`}
+                              data.nonce === nonce &&
+                              `${isDarkMode ? "bg-base-100  border-2 rounded-lg border-green-400" : "bg-green-50"}`
+                            } ${
+                              data.cancel_signatures &&
+                              data.cancel_signatures.length > 0 &&
+                              ` ${isDarkMode ? "bg-base-100  border-2 rounded-lg border-red-400" : "bg-red-50"}`
+                            }`}
                           >
                             <div>
                               <input
@@ -921,7 +990,7 @@ const Home = ({
 
                             <div>
                               <button
-                                className="btn btn-ghost btn-primary btn-outline btn-sm text-xs"
+                                className="btn btn-ghost btn-warning btn-outline btn-sm text-xs"
                                 onClick={() => onExecute(data)}
                                 disabled={isWalletOwner}
                               >
@@ -1040,13 +1109,11 @@ const Home = ({
                         </div>
                       );
                     })}
-                {txPool.length === 0 && (
-                  <div className="flex justify-center text-gray-400 mt-2">No transcactions !</div>
-                )}
+                {txPool.length === 0 && <div className="flex justify-center text-gray-400 mt-2">No transactions !</div>}
               </div>
             )}
             {MAIN_TABS.HISTORY === currentTab && (
-              <div className="w-[60%] mt-4 absolute">
+              <div className="w-[95%] mt-4 -absolute">
                 {txPoolHistory &&
                   txPoolHistory.length > 0 &&
                   txPoolHistory
@@ -1143,8 +1210,8 @@ const Home = ({
           </div>
 
           {/* side view */}
-          <div className="w-[18%] flex flex-col items-center justify-center">
-            <div className="flex flex-col items-center justify-center bg-gray-100 rounded-2xl h-44">
+          <div className="flex flex-col items-center justify-center absolute right-28">
+            <div className="flex flex-col items-center justify-center  bg-base-300 rounded-2xl h-44">
               {walletData && chain && walletData[chain.id] && (walletData[chain.id].selectedWalletAddress as any) && (
                 <QRCode
                   value={walletData && chain && (walletData[chain.id].selectedWalletAddress as any)}
@@ -1160,21 +1227,21 @@ const Home = ({
                 address={walletData && chain && walletData[chain.id] && walletData[chain.id].selectedWalletAddress}
               />
               <div className="ml-2">
-                <ShareIcon width={19} className="text-primary-focus cursor-pointer" onClick={onShareWallet} />
+                <ShareIcon width={19} className="cursor-pointer" onClick={onShareWallet} />
               </div>
             </div>
-            <div className="mt-2 text-sm text-gray-500">
-              Nonce : <span className="text-primary-focus font-bold">{nonce}</span>
+            <div className="mt-2 text-sm">
+              Nonce : <span className="font-bold">{nonce}</span>
             </div>
 
-            <div className="mt-2 text-sm text-gray-500">
+            <div className="mt-2 text-sm">
               Signature{"'"}s :
-              <span className="text-primary-focus font-bold">
+              <span className="font-bold">
                 {signaturesRequired} / {numberOfOwners}{" "}
               </span>
             </div>
 
-            <div className="mt-4 flex flex-col items-center justify-center bg-gray-100 rounded-2xl w-60">
+            <div className="mt-4 flex flex-col items-center justify-center bg-base-100 rounded-2xl w-60">
               <div className="text-sm">Owners</div>
               {walletOwners &&
                 walletOwners.length > 0 &&

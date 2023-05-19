@@ -9,6 +9,7 @@ const Page = () => {
       <Home
         chainId={router.query.chainId as string}
         walletAddress={router.query.address as string}
+        txId={(router.query as any).txId as number}
         isSharedWallet={true}
       />
     </>

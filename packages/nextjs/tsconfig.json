@@ -18,6 +18,6 @@
       "~~/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "pages/wallet/[chainId]/[address].tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "pages/wallet/[chainId]/[address]/[txId].tsx"],
   "exclude": ["node_modules"]
 }

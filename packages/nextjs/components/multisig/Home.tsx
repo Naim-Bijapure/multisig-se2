@@ -59,7 +59,7 @@ const poolData = [
   },
 
   {
-    txId: 22321,
+    txId: 22322,
     chainId: 31337,
     walletAddress: "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975",
     nonce: "1",
@@ -87,7 +87,7 @@ const poolData = [
     isCancel: false,
   },
   {
-    txId: 22321,
+    txId: 22323,
     chainId: 31337,
     walletAddress: "0xbA61FFB5378D34aCD509205Fd032dFEBEc598975",
     nonce: "2",
@@ -115,16 +115,18 @@ const poolData = [
     isCancel: false,
   },
 ];
-const skipTxKey = ["txId", "chainId", "url", "status", "reqType", "isCancel"];
+const skipTxKey = ["chainId", "url", "status", "reqType", "isCancel"];
 
 const Home = ({
   chainId,
   walletAddress,
   isSharedWallet = false,
+  txId = 0,
 }: {
   chainId?: string;
   walletAddress?: string;
   isSharedWallet?: boolean;
+  txId?: number;
 }) => {
   // states
   const [chainData, setChainData] = useState<Chain[]>();
@@ -648,10 +650,27 @@ const Home = ({
     }
   };
 
-  const onShareWallet = async () => {
-    const walletUrl = `${window.location.origin}/wallet/${chain?.id}/${currentWalletAddress}`;
-    copy(walletUrl);
-    toast.success("wallet url copied !");
+  const onShare = async (type: "wallet" | "tx", txId = 0) => {
+    if (type === "wallet") {
+      const walletUrl = `${window.location.origin}/wallet/${chain?.id}/${currentWalletAddress}/${txId}`;
+      copy(walletUrl);
+      toast.success("wallet url copied !");
+    }
+
+    if (type === "tx") {
+      const walletUrl = `${window.location.origin}/wallet/${chain?.id}/${currentWalletAddress}/${txId}`;
+      copy(walletUrl);
+      toast.success("tx url copied !");
+    }
+  };
+
+  const onShowAllTx = async () => {
+    const currentUrl = window.location.href;
+    const splitUrl = currentUrl.split("/");
+    // remove tx id
+    const newUrl = splitUrl.slice(0, splitUrl.length - 1).join("/");
+    // load url with tx 0 to display all tx pool
+    window.location.href = newUrl + "/" + 0;
   };
 
   // useEffects
@@ -924,10 +943,18 @@ const Home = ({
                       <div className="text-xs ml-2 opacity-50">Execute {selectedTxs.length} tx in batch</div>
                     </div>
                   )}
+                  {+txId !== 0 && (
+                    <button className="btn btn-xs btn-warning" onClick={onShowAllTx}>
+                      Show all transactions
+                    </button>
+                  )}
                 </div>
                 {txPool &&
                   txPool.length > 0 &&
                   txPool
+                    .filter(item => {
+                      return +txId !== 0 ? +item.txId === +txId : true;
+                    })
                     .sort((dataA, dataB) => dataA.nonce - dataB.nonce)
                     .map((data, index) => {
                       return (
@@ -947,7 +974,7 @@ const Home = ({
                           }}
                         >
                           <div
-                            className={`collapse-title text-sm font-medium flex justify-around ${
+                            className={`collapse-title text-sm font-medium flex justify-around items-center ${
                               data.nonce === nonce &&
                               `${isDarkMode ? "bg-base-100  border-2 rounded-lg border-green-400" : "bg-green-50"}`
                             } ${
@@ -996,6 +1023,14 @@ const Home = ({
                               >
                                 Execute
                               </button>
+                            </div>
+
+                            <div>
+                              <ShareIcon
+                                width={19}
+                                className="cursor-pointer text-primary"
+                                onClick={() => onShare("tx", data.txId)}
+                              />
                             </div>
                           </div>
                           <div className="collapse-content bg-base-300">
@@ -1227,7 +1262,7 @@ const Home = ({
                 address={walletData && chain && walletData[chain.id] && walletData[chain.id].selectedWalletAddress}
               />
               <div className="ml-2">
-                <ShareIcon width={19} className="cursor-pointer" onClick={onShareWallet} />
+                <ShareIcon width={19} className="cursor-pointer text-primary" onClick={() => onShare("wallet")} />
               </div>
             </div>
             <div className="mt-2 text-sm">

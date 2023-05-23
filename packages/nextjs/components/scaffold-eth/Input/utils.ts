@@ -74,7 +74,7 @@ export enum IntegerVariant {
   INT256 = "int256",
 }
 
-export const SIGNED_NUMBER_REGEX = /^-?\d+\.?\d*$/;
+export const SIGNED_NUMBER_REGEX = /^-?\d*\.?\d*$/;
 export const UNSIGNED_NUMBER_REGEX = /^\.?\d+\.?\d*$/;
 
 export const isValidInteger = (dataType: IntegerVariant, value: BigNumberish, strict = true) => {

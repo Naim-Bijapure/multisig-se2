@@ -247,7 +247,6 @@ export const ProposalModal = ({
   };
 
   const sortSplitAddresses = async () => {
-    // const addresses = splitAddresses?.trim()?.split(",");
     const addresses = splitAddresses?.split(/\n|,|\s+/);
     const finalAddresses: string[] = [];
     if (addresses) {
@@ -266,8 +265,7 @@ export const ProposalModal = ({
       }
     }
 
-    console.log(`n-🔴 => sortSplitAddresses => [...new Set([...finalAddresses])]:`, [...new Set([...finalAddresses])]);
-    setFinalSplitAddresses([...new Set([...finalAddresses])]);
+    setFinalSplitAddresses([...new Set([...finalAddresses])].filter(address => address !== null));
     setIsFetchingAddress(false);
   };
 

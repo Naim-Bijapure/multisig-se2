@@ -102,9 +102,8 @@ export const ProposalModal = ({
           type: "transfer",
           status: TX_STATUS.IN_QUEUE,
           createdAt: moment().format("YYYY-MM-DD HH:mm"),
-          // executedAt: "10-10-2023 10:10",
           createdBy: address,
-          // executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+          isCancel: false,
         };
         if (isOwner) {
           const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
@@ -146,9 +145,8 @@ export const ProposalModal = ({
           type: manageOwnerType,
           status: TX_STATUS.IN_QUEUE,
           createdAt: moment().format("YYYY-MM-DD HH:mm"),
-          // executedAt: "10-10-2023 10:10",
           createdBy: address,
-          // executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+          isCancel: false,
         };
 
         if (isOwner) {
@@ -187,9 +185,8 @@ export const ProposalModal = ({
           type: "customCall",
           status: TX_STATUS.IN_QUEUE,
           createdAt: moment().format("YYYY-MM-DD HH:mm"),
-          // executedAt: "10-10-2023 10:10",
           createdBy: address,
-          // executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+          isCancel: false,
         };
 
         if (isOwner) {
@@ -230,9 +227,8 @@ export const ProposalModal = ({
           split_addresses: [...(finalSplitAddresses as string[])],
           status: TX_STATUS.IN_QUEUE,
           createdAt: moment().format("YYYY-MM-DD HH:mm"),
-          // executedAt: "10-10-2023 10:10",
           createdBy: address,
-          // executedBy: "0x0fAb64624733a7020D332203568754EB1a37DB89",
+          isCancel: false,
         };
 
         if (isOwner) {

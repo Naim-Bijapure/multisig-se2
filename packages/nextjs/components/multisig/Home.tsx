@@ -392,7 +392,6 @@ const Home = ({
       chainId: chain?.id,
       tx_type: TX_STATUS.COMPLETED,
     });
-    console.log(`n-🔴 => loadTxPool => response2.data.data:`, response2.data.data);
     setTxPoolHistory(response2.data.data);
     // toast.dismiss();
   };

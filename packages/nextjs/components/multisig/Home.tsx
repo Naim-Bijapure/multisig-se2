@@ -392,6 +392,7 @@ const Home = ({
       chainId: chain?.id,
       tx_type: TX_STATUS.COMPLETED,
     });
+    console.log(`n-🔴 => loadTxPool => response2.data.data:`, response2.data.data);
     setTxPoolHistory(response2.data.data);
     // toast.dismiss();
   };
@@ -480,6 +481,7 @@ const Home = ({
       setIsConfirmNonceOpen(false);
 
       setTimeout(() => {
+        toast.dismiss(toastId);
         setTogglePool(() => !togglePool);
       }, 1000);
     }
@@ -609,8 +611,9 @@ const Home = ({
         data: [],
         signatures: [],
       };
-      let i = +toExecutedPool[0].nonce;
-      let isExecutable = true;
+      // let i = +toExecutedPool[0].nonce;
+      let i = +nonce;
+      let isExecutable = false;
 
       for (const iterator of toExecutedPool) {
         if (+iterator.nonce === i) {
@@ -619,6 +622,7 @@ const Home = ({
           batchValues.value.push(ethers.utils.parseEther("" + parseFloat(iterator.amount).toFixed(12)));
           batchValues.data.push(iterator.data);
           batchValues.signatures.push(iterator.signatures);
+          isExecutable = true;
         }
 
         if (+iterator.nonce !== i) {
@@ -642,9 +646,9 @@ const Home = ({
         const rcpt = await tx?.wait();
         setSelectedTxs([]);
       } else {
-        toast.error("Selected transaction nonce order is incorrect!");
+        toast.error("Selected transaction nonce order is incorrect or verify batch tx starting from current nonce!");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(`n-🔴 => onBatchExecute => error:`, error);
       notification.error(error.message);
     }
@@ -742,6 +746,28 @@ const Home = ({
 
   const isSharedChainMatch = chain && chain.id === +chainId;
   const targetedNetworkData = chains.filter(item => item.id === +chainId)[0];
+
+  // pool tx's bg colors
+  const getPoolTxBackgroundColor = (item: any) => {
+    // its replaced tx so color would be yellow
+    if (item.nonce === nonce) {
+      return isDarkMode ? "bg-base-100  border-2 rounded-lg border-green-400" : "bg-green-50";
+    } else if (item.cancel_signatures && item.cancel_signatures.length > 0) {
+      return isDarkMode ? "bg-base-100  border-2 rounded-lg border-red-400" : "bg-red-50";
+    }
+  };
+
+  // history tx's bg colors
+  const getHistoryTxBackgroundColor = (item: any) => {
+    // its replaced tx so color would be yellow
+    if (item.isCancel === undefined) {
+      return isDarkMode ? "bg-base-100 border-2 border-yellow-300" : "bg-yellow-100";
+    } else if (item.isCancel) {
+      return isDarkMode ? "bg-base-100 border-2 rounded-lg border-red-400" : "bg-red-50";
+    } else if (item.isCancel === false) {
+      return isDarkMode ? "border-2 rounded-lg border-green-400" : "bg-green-50";
+    }
+  };
 
   return (
     <div
@@ -974,14 +1000,9 @@ const Home = ({
                           }}
                         >
                           <div
-                            className={`collapse-title text-sm font-medium flex justify-around items-center ${
-                              data.nonce === nonce &&
-                              `${isDarkMode ? "bg-base-100  border-2 rounded-lg border-green-400" : "bg-green-50"}`
-                            } ${
-                              data.cancel_signatures &&
-                              data.cancel_signatures.length > 0 &&
-                              ` ${isDarkMode ? "bg-base-100  border-2 rounded-lg border-red-400" : "bg-red-50"}`
-                            }`}
+                            className={`collapse-title text-sm font-medium flex justify-around items-center ${getPoolTxBackgroundColor(
+                              data,
+                            )}`}
                           >
                             <div>
                               <input
@@ -1157,8 +1178,7 @@ const Home = ({
                       return (
                         <div
                           key={data.txId}
-                          // tabIndex={0}
-                          className={`collapse collapse-arrow border border-base-300 bg-base-100 rounded-box m-2 ${
+                          className={`collapse collapse-arrow border border-base-300  rounded-lg m-2 ${
                             activeTab === index && "collapse-open"
                           }`}
                           onClick={event => {
@@ -1170,12 +1190,11 @@ const Home = ({
                             }
                           }}
                         >
-                          {/* <input type="checkbox" /> */}
-
                           <div
-                            className={`collapse-title text-sm font-medium flex justify-around ${
-                              data.isCancel ? "bg-red-100" : "bg-green-100"
-                            }`}
+                            className={`collapse-title text-sm font-medium flex justify-around rounded-lg ${getHistoryTxBackgroundColor(
+                              data,
+                            )}
+                            `}
                           >
                             <div># {data.nonce}</div>
                             <div>{data.type}</div>

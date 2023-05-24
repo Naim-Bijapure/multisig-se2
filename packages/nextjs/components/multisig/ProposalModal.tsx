@@ -67,6 +67,8 @@ export const ProposalModal = ({
     setSignatureRequired("");
     setFinalSplitAddresses([]);
     setSplitAddresses("");
+    setCustomNonce("");
+    setAmount(undefined);
   };
 
   const onPropose = async () => {
@@ -249,7 +251,8 @@ export const ProposalModal = ({
   };
 
   const sortSplitAddresses = async () => {
-    const addresses = splitAddresses?.trim()?.split(",");
+    // const addresses = splitAddresses?.trim()?.split(",");
+    const addresses = splitAddresses?.split(/\n|,|\s+/);
     const finalAddresses: string[] = [];
     if (addresses) {
       setIsFetchingAddress(true);
@@ -267,7 +270,8 @@ export const ProposalModal = ({
       }
     }
 
-    setFinalSplitAddresses(finalAddresses);
+    console.log(`n-🔴 => sortSplitAddresses => [...new Set([...finalAddresses])]:`, [...new Set([...finalAddresses])]);
+    setFinalSplitAddresses([...new Set([...finalAddresses])]);
     setIsFetchingAddress(false);
   };
 
@@ -390,7 +394,7 @@ export const ProposalModal = ({
                       disabled={isFetchingAddress}
                       onChange={event => setSplitAddresses(event.target.value)}
                       placeholder="paste comma separated address list"
-                      className="textarea textarea-bordered  w-[95%]"
+                      className="textarea textarea-bordered rounded-md  w-[95%]"
                     ></textarea>
                   </div>
 

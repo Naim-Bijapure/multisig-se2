@@ -913,7 +913,7 @@ const Home = ({
               }}
             >
               <option disabled>Select wallet</option>
-              {walletList &&
+              {walletList.length > 0 &&
                 walletList.map(data => {
                   return (
                     <option
@@ -923,7 +923,7 @@ const Home = ({
                         chain && walletData[chain?.id] ? walletData[chain?.id].selectedWalletAddress == data.key : false
                       }
                     >
-                      {data.label.length > 15 ? data.label?.slice(0, 15) + "..." : data.label}
+                      {data && data.label && data.label.length > 15 ? data.label?.slice(0, 15) + "..." : data.label}
                     </option>
                   );
                 })}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Address, AddressInput, Balance, EtherInput, InputBase, ROUTE_TYPES, TX_STATUS } from "../scaffold-eth";
+import { Address, AddressInput, EtherInput, InputBase, ROUTE_TYPES, TX_STATUS } from "../scaffold-eth";
 import { fetchEnsAddress } from "@wagmi/core";
 import axios from "axios";
 import { ethers } from "ethers";
@@ -106,7 +106,7 @@ export const ProposalModal = ({
           isCancel: false,
         };
         if (isOwner) {
-          const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
+          await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
         }
       }
 
@@ -150,7 +150,7 @@ export const ProposalModal = ({
         };
 
         if (isOwner) {
-          const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
+          await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
         }
       }
 
@@ -190,7 +190,7 @@ export const ProposalModal = ({
         };
 
         if (isOwner) {
-          const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
+          await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
         }
       }
       if (PROPOSAL_TYPES.SPLIT_ETH === currentTab) {
@@ -232,14 +232,14 @@ export const ProposalModal = ({
         };
 
         if (isOwner) {
-          const res = await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
+          await axios.post(`/api/pool`, { reqType: ROUTE_TYPES.ADD_TX, ...reqData });
         }
       }
 
       toast.dismiss(toastId);
       setIsProposalModalOpen(false);
       resetData();
-    } catch (error) {
+    } catch (error: any) {
       toast.dismiss(toastId);
       notification.error(error.message);
       console.log("n-Error: ", error);
@@ -269,7 +269,7 @@ export const ProposalModal = ({
     setIsFetchingAddress(false);
   };
 
-  const removeSplitAddress = async address => {
+  const removeSplitAddress = async (address: any) => {
     setFinalSplitAddresses(finalSplitAddresses?.filter(value => value !== address));
   };
 

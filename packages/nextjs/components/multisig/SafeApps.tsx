@@ -229,7 +229,7 @@ const SafeApps = ({ isWC = false }: { isWC: boolean }) => {
         key={"iframe"}
         title="app"
         src={!isWC ? selectedUrl : "https://apps-portal.safe.global/wallet-connect"}
-        className="h-screen w-[97%]  border-4 border-primary rounded-md"
+        className={`h-screen w-[97%]  border-4 border-primary rounded-md ${isWC && "border-0"}`}
         ref={iframeRef}
         // onLoad={() => {}}
       />

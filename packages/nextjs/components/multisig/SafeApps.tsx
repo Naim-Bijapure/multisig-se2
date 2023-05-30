@@ -134,8 +134,8 @@ const SafeApps = ({ isWC = false }: { isWC: boolean }) => {
         hash: newHash,
         signatures: [signature],
         signers: [recover],
-        type: "iframe",
-        appUrl: appUrl,
+        type: isWC ? "Wallet connect" : "iframe",
+        appUrl: !isWC && appUrl,
         status: TX_STATUS.IN_QUEUE,
         createdAt: moment().format("YYYY-MM-DD HH:mm"),
         createdBy: from,
@@ -229,7 +229,7 @@ const SafeApps = ({ isWC = false }: { isWC: boolean }) => {
         key={"iframe"}
         title="app"
         src={!isWC ? selectedUrl : "https://apps-portal.safe.global/wallet-connect"}
-        className={`h-screen w-[97%]  border-4 border-primary rounded-md ${isWC && "border-0"}`}
+        className={`h-screen w-[97%] ${isWC ? "border-0" : "border-4 border-primary rounded-md"}`}
         ref={iframeRef}
         // onLoad={() => {}}
       />

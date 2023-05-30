@@ -12,9 +12,26 @@ import create from "zustand";
 type TAppStore = {
   ethPrice: number;
   setEthPrice: (newEthPriceState: number) => void;
+
+  walletAddress: string;
+  setWalletAddress: (newAddress: string) => void;
+
+  currentWalletContract: any;
+  setCurrentWalletContract: (wallet: any) => void;
+
+  txPoolLength: string | any;
+  setTxPoolLength: (value: any) => void;
 };
 
 export const useAppStore = create<TAppStore>(set => ({
   ethPrice: 0,
   setEthPrice: (newValue: number): void => set(() => ({ ethPrice: newValue })),
+  walletAddress: "",
+  setWalletAddress: (newAddress: string): void => set(() => ({ walletAddress: newAddress })),
+
+  currentWalletContract: undefined,
+  setCurrentWalletContract: (wallet: any): void => set(() => ({ currentWalletContract: wallet })),
+
+  txPoolLength: undefined,
+  setTxPoolLength: (value: any): void => set(() => ({ txPoolLength: value })),
 }));

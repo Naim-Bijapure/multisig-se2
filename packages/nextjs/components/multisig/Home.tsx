@@ -123,9 +123,6 @@ const Home = ({
   const { address, isConnected } = useAccount();
   const { data: signer } = useSigner();
 
-  console.log(`n-🔴 => walletAmount:`, walletAmount, parseFloat(walletAmount as string).toFixed(1));
-  // console.log(`n-🔴 => w amount`, !isNaN(walletAmount as any) ? walletAmount : 0);
-
   // scaffold hooks
   // create 2
   const { data: create2Data, writeAsync } = useScaffoldContractWrite({

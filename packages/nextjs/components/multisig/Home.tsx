@@ -6,7 +6,7 @@ import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
 import QRCode from "react-qr-code";
 import { useCopyToClipboard, useDarkMode, useDebounce, useInterval, useLocalStorage } from "usehooks-ts";
-import { Chain, useAccount, useNetwork, useSigner, useSwitchNetwork } from "wagmi";
+import { Chain, useAccount, useNetwork, useSignTypedData, useSigner, useSwitchNetwork } from "wagmi";
 import { MinusCircleIcon, PlusCircleIcon, RocketLaunchIcon, ShareIcon } from "@heroicons/react/24/outline";
 import { ConfirmNonceModal } from "~~/components/multisig/ConfirmNonceModal";
 import { ProposalModal } from "~~/components/multisig/ProposalModal";
@@ -122,6 +122,9 @@ const Home = ({
   const { chain } = useNetwork();
   const { address, isConnected } = useAccount();
   const { data: signer } = useSigner();
+
+  console.log(`n-🔴 => walletAmount:`, walletAmount, parseFloat(walletAmount as string).toFixed(1));
+  // console.log(`n-🔴 => w amount`, !isNaN(walletAmount as any) ? walletAmount : 0);
 
   // scaffold hooks
   // create 2
@@ -763,7 +766,8 @@ const Home = ({
 
       {isConnected === false && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  z-50">
-          <ConnectButton label="Connect" />
+          {/* <ConnectButton label="Connect" /> */}
+          <div className="text-primary-focus">Connect your wallet to see multisig !</div>
         </div>
       )}
 
@@ -1341,10 +1345,8 @@ const Home = ({
             </div>
             <div className="m-2">
               <EtherInput
-                onChange={value => {
-                  setWalletAmount(value);
-                }}
-                value={walletAmount ? walletAmount : ""}
+                onChange={setWalletAmount}
+                value={walletAmount as string}
                 placeholder="Enter initial amount (optional)"
               />
             </div>

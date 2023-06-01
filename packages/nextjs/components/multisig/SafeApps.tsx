@@ -5,7 +5,7 @@ import { ethers, utils } from "ethers";
 import moment from "moment";
 import toast from "react-hot-toast";
 import { useLocalStorage } from "usehooks-ts";
-import { useNetwork, useProvider, useSigner } from "wagmi";
+import { useNetwork, useProvider, useSignTypedData, useSigner } from "wagmi";
 import { Address, ROUTE_TYPES, TX_STATUS } from "~~/components/scaffold-eth";
 import { useAppCommunicator } from "~~/safeAppService";
 import {
@@ -32,19 +32,40 @@ const SafeApps = ({ isWC = false }: { isWC: boolean }) => {
   // local states
   const [newTx, setNewTx] = useState(null);
   const [appUrl, setAppUrl] = useState("https://app.uniswap.org");
+  const [safeSignedData, setSafeSignedData] = useState(null);
   // const [selectedUrl, setSelectedUrl] = useState("https://app.uniswap.org");
   const [urls, setUrls] = useState<any>();
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const communicator = useAppCommunicator(iframeRef);
-
+  // wagmi hooks
   const provider = useProvider();
   const { data: signer } = useSigner();
   const { chain } = useNetwork();
+  const { data, isError, isLoading, isSuccess, signTypedData } = useSignTypedData(
+    safeSignedData !== null ? { ...(safeSignedData as any) } : {},
+  );
 
+  console.log(`n-🔴 => SafeApps => data, isError, isLoading, isSuccess:`, data, isError, isLoading, isSuccess);
   //   useEffects
   useEffect(() => {
-    if (!provider) return;
+    if (safeSignedData !== null) {
+      console.log(`n-🔴 => useEffect => safeSignedData:`, safeSignedData);
+      signTypedData();
+    }
+  }, [safeSignedData]);
+
+  useEffect(() => {
+    if (data) {
+      const signedMessage = {
+        data: data, // Replace `signedContent` with the actual signed message content
+      };
+      console.log(`n-🔴 => useEffect => signedMessage:`, signedMessage);
+      (iframeRef.current as any).contentWindow.postMessage(signedMessage, "*");
+    }
+  }, [data]);
+  useEffect(() => {
+    if (!provider && !signer) return;
 
     communicator?.on(Methods.getSafeInfo, async () => {
       return {
@@ -83,14 +104,19 @@ const SafeApps = ({ isWC = false }: { isWC: boolean }) => {
 
     communicator?.on(Methods.signMessage, async msg => {
       const { message } = msg.data.params as SignMessageParams;
+      console.log(`n-🔴 => useEffect => message:`, message);
       // openSignMessageModal(message, msg.data.id, Methods.signMessage)
     });
 
     communicator?.on(Methods.signTypedMessage, async msg => {
       const { typedData } = msg.data.params as SignTypedMessageParams;
+      console.log(`n-🔴 => useEffect => typedData:`, typedData);
+
+      // setSafeSignedData({ ...(typedData as any), value: (typedData as any).message });
+      return "0xec380945dfc735e5e99e6b8f545cb7ec17d8a2d2e99fb92ec534376d151f6be74b39113641dd99425671c4126b0973c0c5500bd9d171fd671278f9ea3debdceb1c";
     });
     onLoadUrls();
-  }, [communicator, walletAddress, provider]);
+  }, [communicator, walletAddress, provider, signer]);
 
   const onLoadUrls = async () => {
     const result = await axios.get("https://safe-client.safe.global/v1/chains/4/safe-apps");
@@ -248,7 +274,7 @@ const SafeApps = ({ isWC = false }: { isWC: boolean }) => {
           </label>
 
           <h3 className="font-bold text-lg">
-            Create proposal from <span className="text-primary">{appUrl}</span>{" "}
+            Create proposal from {isWC === false && <span className="text-primary">{appUrl}</span>}
           </h3>
           <div>
             <div className="overflow-x-auto">

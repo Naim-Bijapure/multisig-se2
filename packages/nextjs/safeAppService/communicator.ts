@@ -57,6 +57,7 @@ class AppCommunicator {
       // console.log("incoming", { msg: msg.data });
 
       const handler = this.handlers.get(msg.data.method);
+      console.log(`n-🔴 => AppCommunicator => handleIncomingMessage= => msg.data.method:`, msg.data);
       try {
         // @ts-expect-error Handler existence is checked in this.canHandleMessage
         const response = await handler(msg);

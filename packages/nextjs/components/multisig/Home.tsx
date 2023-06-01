@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { WalletConnectConnector } from "@wagmi/core/connectors/walletConnect";
 import axios from "axios";
 import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
@@ -131,7 +130,7 @@ const Home = ({
     functionName: "create2",
 
     args: [ownersAddress, signatures as any, debounceWalletName],
-    value: walletAmount,
+    value: walletAmount && !isNaN(+walletAmount) ? `${Number(walletAmount)}` : "0",
   });
 
   const Tx = useTransactor(signer ? signer : undefined);

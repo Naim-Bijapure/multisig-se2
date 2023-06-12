@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Contract, ContractCodeStatus, ContractName } from "./contract.types";
 import { useIsMounted } from "usehooks-ts";
 import { useNetwork, useProvider } from "wagmi";
-import contracts from "~~/generated/hardhat_contracts";
+//@ts-ignore // some conflicts with  hardhat_contracts.ts and hardhat_contracts.json on nextjs runtime
+import contracts from "~~/generated/hardhat_contracts.ts";
 import scaffoldConfig from "~~/scaffold.config";
 
 /**

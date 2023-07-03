@@ -518,8 +518,6 @@ const Home = ({
     if (ethers.utils.isAddress(ownerAddress)) {
       setOwnersAddress([...new Set([...ownersAddress, ownerAddress])]);
       setOwnerAddress("");
-    } else {
-      setOwnerAddress("");
     }
   };
 
@@ -691,6 +689,13 @@ const Home = ({
       setTxPoolLength(txPool.length);
     }
   }, [walletContract, txPool]);
+
+  // add create wallet address
+  useEffect(() => {
+    if (ownerAddress) {
+      onAddOwner();
+    }
+  }, [ownerAddress]);
 
   // dynamic values
   const walletList = [...filterWallets()];
@@ -1310,9 +1315,6 @@ const Home = ({
             <div className="m-2 flex flex-col items-start">
               <div className="flex">
                 <AddressInput onChange={setOwnerAddress} value={ownerAddress} placeholder="Enter owner address" />
-                <button className="btn btn-accent btn-sm" onClick={onAddOwner} disabled={!ownerAddress}>
-                  +
-                </button>
               </div>
               <div className="flex flex-col m-2">
                 {ownersAddress.map(ownerAddress => {

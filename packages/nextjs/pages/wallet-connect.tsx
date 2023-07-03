@@ -5,7 +5,7 @@ import { useAppStore } from "~~/services/store/store";
 
 // const appUrl = "http://localhost:3001";
 
-const WallectConnectPage = () => {
+const WalletConnectPage = () => {
   const router = useRouter();
 
   const walletAddress = useAppStore(state => state.walletAddress);
@@ -23,4 +23,4 @@ const WallectConnectPage = () => {
   );
 };
 
-export default WallectConnectPage;
+export default WalletConnectPage;

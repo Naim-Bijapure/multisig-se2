@@ -827,6 +827,8 @@ const Home = ({
                 address={address}
                 nonce={nonce}
                 poolTxNumber={txPool?.length}
+                numberOfOwners={numberOfOwners}
+                currentSignatures={signaturesRequired}
               />
             </div>
           </div>

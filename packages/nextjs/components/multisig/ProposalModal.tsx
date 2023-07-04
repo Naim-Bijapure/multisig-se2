@@ -26,6 +26,8 @@ export const ProposalModal = ({
   chainId,
   nonce,
   poolTxNumber,
+  numberOfOwners,
+  currentSignatures,
 }: {
   isProposalModalOpen: boolean;
   setIsProposalModalOpen: any;
@@ -35,6 +37,8 @@ export const ProposalModal = ({
   nonce: number | any;
   chainId: number | any;
   poolTxNumber: number | any;
+  numberOfOwners: number | any;
+  currentSignatures: number | any;
 }) => {
   const [currentTab, setCurrentTab] = useState<PROPOSAL_TYPES>(0);
   const [recipient, setRecipient] = useState<string>("");
@@ -353,7 +357,7 @@ export const ProposalModal = ({
                     <InputBase
                       onChange={setSignatureRequired}
                       value={signatureRequired}
-                      placeholder="Enter new signer required"
+                      placeholder={`Enter new ${currentSignatures} / ${numberOfOwners} threshold`}
                     />
                   </div>
                 </div>

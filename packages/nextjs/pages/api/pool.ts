@@ -3,7 +3,7 @@ import { ROUTE_TYPES, TX_STATUS } from "~~/components/scaffold-eth";
 
 let transactions: any = {};
 
-const IS_LOCAL_TX_STORAGE = true; // set true if you want to use local tx storage
+const IS_LOCAL_TX_STORAGE = false; // set true if you want to use local tx storage
 const TX_COLLECTION_NAME = "transactions";
 
 console.log(`n-🔴 => process.env.UPSTASH_URL:`, process.env.UPSTASH_URL);
